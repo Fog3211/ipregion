@@ -1,4 +1,3 @@
-import { PrismaClient } from '@prisma/client';
 import { createWriteStream } from 'fs';
 import { pipeline } from 'stream';
 import { promisify } from 'util';
@@ -6,9 +5,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { parse } from 'csv-parse';
 import { COUNTRIES, getCountryByCode2 } from './data/countries';
+import { ipToInt, intToIp } from '../src/lib/ip-utils';
+import { db } from '../src/server/db';
 
 const streamPipeline = promisify(pipeline);
-const prisma = new PrismaClient();
 
 // IP2Location LITE download URL (free version)
 const IP2LOCATION_URL = 'https://download.ip2location.com/lite/IP2LOCATION-LITE-DB1.CSV.ZIP';
@@ -25,24 +25,7 @@ interface IPLocationRecord {
   countryName: string;
 }
 
-// Utility function to convert IP to integer
-function ipToInt(ip: string): bigint {
-  const parts = ip.split('.').map(Number);
-  if (parts.length !== 4 || parts.some(part => isNaN(part) || part < 0 || part > 255)) {
-    throw new Error(`Invalid IP address format: ${ip}`);
-  }
-  return BigInt(parts[0]! * 256 * 256 * 256 + parts[1]! * 256 * 256 + parts[2]! * 256 + parts[3]!);
-}
 
-// Utility function to convert integer to IP
-function intToIp(ipInt: bigint): string {
-  const num = Number(ipInt);
-  const a = Math.floor(num / (256 * 256 * 256));
-  const b = Math.floor((num % (256 * 256 * 256)) / (256 * 256));
-  const c = Math.floor((num % (256 * 256)) / 256);
-  const d = num % 256;
-  return `${a}.${b}.${c}.${d}`;
-}
 
 async function ensureDataDirectory() {
   if (!fs.existsSync(DATA_DIR)) {
@@ -144,14 +127,14 @@ async function importCountries(): Promise<void> {
   console.log('🌍 Importing country data...');
   
   // Clear existing data
-  await prisma.ipRange.deleteMany();
-  await prisma.region.deleteMany();
-  await prisma.city.deleteMany();
-  await prisma.country.deleteMany();
+  await db.ipRange.deleteMany();
+  await db.region.deleteMany();
+  await db.city.deleteMany();
+  await db.country.deleteMany();
   
   // Import countries
   for (const country of COUNTRIES) {
-    await prisma.country.create({
+    await db.country.create({
       data: {
         id: country.id,
         code2: country.code2,
@@ -198,7 +181,7 @@ async function importIPRanges(records: IPLocationRecord[]): Promise<void> {
     }
     
     if (ipRanges.length > 0) {
-      await prisma.ipRange.createMany({
+      await db.ipRange.createMany({
         data: ipRanges,
       });
     }
@@ -232,8 +215,8 @@ async function cleanup(): Promise<void> {
 async function showStatistics(): Promise<void> {
   console.log('\n📊 Import Statistics:');
   
-  const countryCount = await prisma.country.count();
-  const ipRangeCount = await prisma.ipRange.count();
+  const countryCount = await db.country.count();
+  const ipRangeCount = await db.ipRange.count();
   
   console.log(`   Countries: ${countryCount}`);
   console.log(`   IP Ranges: ${ipRangeCount}`);
@@ -284,7 +267,7 @@ async function main() {
     
     process.exit(1);
   } finally {
-    await prisma.$disconnect();
+    await db.$disconnect();
   }
 }
 

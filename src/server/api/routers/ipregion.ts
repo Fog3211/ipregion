@@ -1,38 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-
-// Utility function to convert IP address to integer
-function ipToInt(ip: string): bigint {
-	const parts = ip.split('.').map(Number);
-	if (parts.length !== 4 || parts.some(part => isNaN(part) || part < 0 || part > 255)) {
-		throw new Error("Invalid IP address format");
-	}
-	return BigInt(parts[0]! * 256 * 256 * 256 + parts[1]! * 256 * 256 + parts[2]! * 256 + parts[3]!);
-}
-
-// Utility function to convert integer to IP address
-function intToIp(int: bigint): string {
-	const num = Number(int);
-	return [
-		Math.floor(num / (256 * 256 * 256)) % 256,
-		Math.floor(num / (256 * 256)) % 256,
-		Math.floor(num / 256) % 256,
-		num % 256
-	].join('.');
-}
-
-// Generate random IP address within specified range
-function generateRandomIpInRange(startIp: string, endIp: string): string {
-	const startInt = ipToInt(startIp);
-	const endInt = ipToInt(endIp);
-	
-	// Generate random integer within range
-	const range = endInt - startInt;
-	const randomOffset = BigInt(Math.floor(Math.random() * Number(range + 1n)));
-	const randomIpInt = startInt + randomOffset;
-	
-	return intToIp(randomIpInt);
-}
+import { generateRandomIpInRange } from "~/lib/ip-utils";
 
 export const ipRegionRouter = createTRPCRouter({
 	// Generate random IP addresses for specified country/region
@@ -51,7 +19,7 @@ export const ipRegionRouter = createTRPCRouter({
 					OR: [
 						{ id: query.toUpperCase() }, // 3-letter country code match (e.g., CHN, USA, JPN)
 						{ code2: query.toUpperCase() }, // 2-letter country code match (e.g., CN, US, JP)
-						{ nameEn: { contains: query, mode: 'insensitive' } }, // English name fuzzy match
+						{ nameEn: { contains: query } }, // English name fuzzy match
 						{ nameZh: { contains: query } }, // Chinese name fuzzy match
 					],
 				},
