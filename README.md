@@ -1,19 +1,19 @@
-# 随机IP地址生成器
+# Random IP Address Generator
 
-基于 [T3 Stack](https://create.t3.gg/) 构建的随机IP地址生成服务，支持根据国家地区码或名称生成对应地区的真实IP地址。
+A random IP address generation service built with [T3 Stack](https://create.t3.gg/), supporting IP address generation based on country codes or names.
 
-## 🎯 功能特性
+## 🎯 Features
 
-- **🎲 随机IP生成**: 输入国家代码或名称，生成该地区的真实IP地址
-- **📊 批量生成**: 支持一次生成1-10个IP地址
-- **🌍 全球覆盖**: 支持200+个国家和地区
-- **📋 一键复制**: 单个或批量复制生成的IP地址
-- **📍 详细信息**: 显示IP的地理位置、ISP等详细信息
-- **🚀 现代化技术栈**: Next.js + TypeScript + tRPC + Prisma + Tailwind CSS
-- **📱 响应式设计**: 支持桌面和移动端
-- **🔗 API支持**: 提供RESTful API接口供外部调用
+- **🎲 Random IP Generation**: Generate real IP addresses by inputting country codes or names
+- **📊 Batch Generation**: Support generating 1-10 IP addresses at once
+- **🌍 Global Coverage**: Support 200+ countries and regions
+- **📋 One-click Copy**: Copy single or multiple generated IP addresses
+- **📍 Detailed Information**: Display IP geolocation, ISP and other detailed information
+- **🚀 Modern Tech Stack**: Next.js + TypeScript + tRPC + Prisma + Tailwind CSS
+- **📱 Responsive Design**: Support desktop and mobile devices
+- **🔗 API Support**: Provide RESTful API interfaces for external calls
 
-## 技术栈
+## Tech Stack
 
 - **Frontend**: [Next.js 15](https://nextjs.org) with App Router
 - **Backend**: [tRPC](https://trpc.io) for type-safe APIs
@@ -22,75 +22,75 @@
 - **Type Safety**: [TypeScript](https://www.typescriptlang.org/)
 - **Development**: [Biome](https://biomejs.dev/) for linting and formatting
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 环境要求
+### Requirements
 
 - Node.js 18+ 
-- pnpm 或 npm
+- pnpm
 
-### 安装和运行
+### Installation and Setup
 
-1. 克隆仓库
+1. Clone repository
 ```bash
 git clone <repository-url>
 cd ipregion
 ```
 
-2. 安装依赖
+2. Install dependencies
 ```bash
 pnpm install
 ```
 
-3. 设置数据库
+3. Setup database
 ```bash
-npm run db:push
-npm run db:seed  # 创建示例数据
+pnpm run db:push
+pnpm run db:seed  # Create sample data
 ```
 
-4. 启动开发服务器
+4. Start development server
 ```bash
-npm run dev
+pnpm run dev
 ```
 
-5. 访问应用
-打开浏览器访问 [http://localhost:3000](http://localhost:3000)
+5. Access application
+Open browser and visit [http://localhost:3000](http://localhost:3000)
 
-## 📖 使用方法
+## 📖 Usage
 
-### 网页界面使用
+### Web Interface
 
-1. 在输入框中输入国家代码或名称
-   - 国家代码：CN, US, JP, UK
-   - 中文名：中国, 美国, 日本
-   - 英文名：China, America, Japan
+1. Enter country code or name in the input field
+   - Country codes: CN, US, JP, UK
+   - Chinese names: 中国, 美国, 日本
+   - English names: China, America, Japan
 
-2. 选择生成数量（1-10个）
+2. Select generation count (1-10)
 
-3. 点击"生成IP"按钮
+3. Click "Generate IP" button
 
-4. 复制生成的IP地址
+4. Copy generated IP addresses
 
-### API调用
+### API Calls
 
-#### 生成随机IP地址
+#### Generate Random IP Addresses
 
-**接口地址**: `/api/generate-ip`
+**API Endpoint**: `/api/generate-ip`
 
-**方式一: GET请求**
+**Method 1: GET Request**
 
-**请求参数**:
-- `country`: 国家代码或名称（必需）
-- `count`: 生成数量（1-10，默认1）
+**Request Parameters**:
+- `country`: Country code or name (required)
+- `count`: Generation count (1-10, default 1)
 
-**示例请求**:
+**Example Request**:
 ```
 GET /api/generate-ip?country=CN&count=3
 ```
 
-**方式二: POST请求**
+**Method 2: POST Request**
 
-**请求体**:
+**Request Body**:
 ```json
 {
   "country": "CN",
@@ -98,7 +98,7 @@ GET /api/generate-ip?country=CN&count=3
 }
 ```
 
-**响应格式**:
+**Response Format**:
 ```json
 {
   "success": true,
@@ -126,126 +126,126 @@ GET /api/generate-ip?country=CN&count=3
 }
 ```
 
-**错误响应**:
+**Error Response**:
 ```json
 {
   "success": false,
-  "error": "未找到国家/地区: XX"
+  "error": "Country/region not found: XX"
 }
 ```
 
-## 🎯 使用场景
+## 🎯 Use Cases
 
-### 开发测试
-- **网络代理测试**: 生成不同国家的测试IP
-- **地理位置服务**: 模拟用户来源
-- **CDN分发测试**: 测试内容分发网络
+### Development Testing
+- **Network Proxy Testing**: Generate test IPs from different countries
+- **Geolocation Services**: Simulate user origins
+- **CDN Distribution Testing**: Test content distribution networks
 
-### 数据分析
-- **用户行为模拟**: 模拟不同地区用户访问
-- **A/B测试**: 地区化功能测试
-- **负载测试**: 模拟全球用户负载
+### Data Analysis
+- **User Behavior Simulation**: Simulate user access from different regions
+- **A/B Testing**: Geolocation feature testing
+- **Load Testing**: Simulate global user load
 
-### 安全测试
-- **防火墙规则测试**: 测试地区访问限制
-- **IP白名单测试**: 验证访问控制
-- **地理围栏测试**: 测试地区限制功能
+### Security Testing
+- **Firewall Rule Testing**: Test regional access restrictions
+- **IP Whitelist Testing**: Verify access control
+- **Geo-fencing Testing**: Test regional restriction features
 
-## 🗃️ 数据库架构
+## 🗃️ Database Schema
 
-### 核心表结构
+### Core Table Structure
 
 ```sql
--- 国家信息表
+-- Country Information Table
 Country {
-  id: String         // 国家代码 (CN, US, JP)
-  nameEn: String     // 英文名
-  nameZh: String     // 中文名
-  continent: String  // 大洲
-  region: String     // 地区
+  id: String         // Country code (CN, US, JP)
+  nameEn: String     // English name
+  nameZh: String     // Chinese name
+  continent: String  // Continent
+  region: String     // Region
 }
 
--- IP段信息表
+-- IP Range Information Table
 IpRange {
-  startIp: String      // 起始IP
-  endIp: String        // 结束IP
-  startIpInt: BigInt   // 起始IP整数（用于范围查询）
-  endIpInt: BigInt     // 结束IP整数
-  countryId: String    // 关联国家代码
-  regionName: String   // 省/州名称
-  cityName: String     // 城市名称
-  isp: String          // ISP供应商
+  startIp: String      // Start IP
+  endIp: String        // End IP
+  startIpInt: BigInt   // Start IP integer (for range queries)
+  endIpInt: BigInt     // End IP integer
+  countryId: String    // Associated country code
+  regionName: String   // Province/state name
+  cityName: String     // City name
+  isp: String          // ISP provider
 }
 ```
 
-## 📊 数据来源
+## 📊 Data Sources
 
-### 支持的数据导入
+### Supported Data Import
 
-1. **IP2Location数据** (推荐)
+1. **IP2Location Data** (Recommended)
    ```bash
-   npm run import:ip2location
+   pnpm run import:ip2location
    ```
-   - 全球300万+IP段数据
-   - 200+国家覆盖
-   - 省/州/城市级精度
+   - 3+ million IP range data globally
+   - 200+ countries coverage
+   - Province/state/city level accuracy
 
-2. **演示数据**
+2. **Demo Data**
    ```bash
-   npm run db:seed
+   pnpm run db:seed
    ```
-   - 快速开始的示例数据
-   - 包含主要国家IP段
+   - Quick start sample data
+   - Includes major countries' IP ranges
 
-## 🔧 开发指南
+## 🔧 Development Guide
 
-### 本地开发
+### Local Development
 
 ```bash
-# 开发模式
-npm run dev
+# Development mode
+pnpm run dev
 
-# 类型检查
-npm run typecheck
+# Type checking
+pnpm run typecheck
 
-# 代码格式化
-npm run check:write
+# Code formatting
+pnpm run check:write
 
-# 数据库管理
-npm run db:studio
+# Database management
+pnpm run db:studio
 ```
 
-### 部署
+### Deployment
 
 ```bash
-# 构建生产版本
-npm run build
+# Build production version
+pnpm run build
 
-# 启动生产服务器
-npm start
+# Start production server
+pnpm start
 ```
 
-## 📈 性能指标
+## 📈 Performance Metrics
 
-- **查询速度**: < 200ms
-- **数据准确性**: 国家级 99.8%
-- **并发支持**: 支持高并发请求
-- **内存占用**: < 100MB（含索引）
+- **Query Speed**: < 200ms
+- **Data Accuracy**: 99.8% at country level
+- **Concurrent Support**: Support high concurrent requests
+- **Memory Usage**: < 100MB (including indexes)
 
-## 🛠️ 技术特性
+## 🛠️ Technical Features
 
-- **类型安全**: 端到端TypeScript支持
-- **实时验证**: Zod运行时类型检查
-- **响应式UI**: Tailwind CSS现代化界面
-- **性能优化**: 数据库索引和查询优化
-- **错误处理**: 完善的错误处理机制
+- **Type Safety**: End-to-end TypeScript support
+- **Runtime Validation**: Zod runtime type checking
+- **Responsive UI**: Modern Tailwind CSS interface
+- **Performance Optimization**: Database indexing and query optimization
+- **Error Handling**: Comprehensive error handling mechanism
 
-## 📝 许可证
+## 📝 License
 
-本项目基于 MIT 许可证开源。
+This project is open source under the MIT License.
 
 ---
 
-🚀 **立即开始**: `npm run dev`  
-🔗 **API文档**: 访问 `/api/trpc` 查看完整API  
-🎯 **在线演示**: [项目演示地址]
+🚀 **Get Started**: `pnpm run dev`  
+🔗 **API Documentation**: Visit `/api/trpc` for complete API  
+🎯 **Live Demo**: [Project Demo URL]

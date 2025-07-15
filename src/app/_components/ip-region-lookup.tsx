@@ -7,11 +7,11 @@ export function IpRegionLookup() {
 	const [query, setQuery] = useState("");
 	const [generateCount, setGenerateCount] = useState(1);
 
-	// 生成指定国家的IP地址
+	// Generate IP addresses for specified country
 	const generateIpQuery = api.ipRegion.generateIpByCountry.useQuery(
 		{ query, count: generateCount },
 		{
-			enabled: false, // 手动触发
+			enabled: false, // Manual trigger
 		}
 	);
 
@@ -23,28 +23,28 @@ export function IpRegionLookup() {
 
 	return (
 		<div className="space-y-6">
-			{/* 标题 */}
+			{/* Title */}
 			<div className="text-center">
 				<h2 className="mb-4 font-bold text-3xl text-gray-800">
-					随机IP地址生成器
+					Random IP Address Generator
 				</h2>
 				<p className="text-gray-600">
-					输入国家代码或名称，生成该地区的真实IP地址
+					Enter country code or name to generate real IP addresses from that region
 				</p>
 			</div>
 
-			{/* 生成输入框 */}
+			{/* Generation input */}
 			<div className="bg-white rounded-lg shadow-md p-6">
 				<div className="space-y-4">
 					<label className="block text-sm font-medium text-gray-700">
-						输入国家代码或名称
+						Enter country code or name
 					</label>
 					<div className="flex gap-2">
 						<input
 							type="text"
 							value={query}
 							onChange={(e) => setQuery(e.target.value)}
-							placeholder="例如: CN, 中国, China, US, 美国, Japan"
+							placeholder="e.g: CN, China, 中国, US, America, Japan"
 							className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
 							onKeyPress={(e) => {
 								if (e.key === "Enter") {
@@ -58,7 +58,7 @@ export function IpRegionLookup() {
 							className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
 						>
 							{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-								<option key={num} value={num}>{num}个</option>
+								<option key={num} value={num}>{num} IPs</option>
 							))}
 						</select>
 						<button
@@ -66,13 +66,13 @@ export function IpRegionLookup() {
 							disabled={!query.trim() || generateIpQuery.isLoading}
 							className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
 						>
-							{generateIpQuery.isLoading ? "生成中..." : "生成IP"}
+							{generateIpQuery.isLoading ? "Generating..." : "Generate IP"}
 						</button>
 					</div>
 				</div>
 			</div>
 
-			{/* 生成结果 */}
+			{/* Generation results */}
 			<div className="space-y-4">
 				{generateIpQuery.error && (
 					<div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -86,7 +86,7 @@ export function IpRegionLookup() {
 					<div className="bg-white rounded-lg shadow-md p-6">
 						<div className="mb-4">
 							<h3 className="font-semibold text-xl text-gray-800">
-								✅ 已生成 {generateIpQuery.data.ips.length} 个 {generateIpQuery.data.country.nameZh || generateIpQuery.data.country.nameEn} 的IP地址
+								✅ Generated {generateIpQuery.data.ips.length} IP address{generateIpQuery.data.ips.length > 1 ? 'es' : ''} from {generateIpQuery.data.country.nameZh || generateIpQuery.data.country.nameEn}
 							</h3>
 							<div className="flex flex-wrap gap-2 mt-2">
 								<span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -104,7 +104,7 @@ export function IpRegionLookup() {
 								)}
 							</div>
 							<p className="text-sm text-gray-500 mt-2">
-								从 {generateIpQuery.data.totalRanges} 个IP段中随机生成
+								Randomly generated from {generateIpQuery.data.totalRanges} IP ranges
 							</p>
 						</div>
 
@@ -121,12 +121,12 @@ export function IpRegionLookup() {
 										<button
 											onClick={() => {
 												navigator.clipboard.writeText(ipData.ip).then(() => {
-													// 可以添加复制成功的提示
+													// Could add copy success notification
 												});
 											}}
 											className="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-full transition-colors font-medium"
 										>
-											📋 复制
+											📋 Copy
 										</button>
 									</div>
 									
@@ -134,7 +134,7 @@ export function IpRegionLookup() {
 										{(ipData.location.region || ipData.location.city) && (
 											<p className="flex items-center gap-1">
 												<span className="text-gray-500">📍</span>
-												<span className="font-medium">位置:</span>{" "}
+												<span className="font-medium">Location:</span>{" "}
 												{[ipData.location.region, ipData.location.city].filter(Boolean).join(", ")}
 											</p>
 										)}
@@ -147,14 +147,14 @@ export function IpRegionLookup() {
 										)}
 										<p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
 											<span className="text-gray-400">🔗</span>
-											IP段: {ipData.ipRange.startIp} - {ipData.ipRange.endIp}
+											IP Range: {ipData.ipRange.startIp} - {ipData.ipRange.endIp}
 										</p>
 									</div>
 								</div>
 							))}
 						</div>
 
-						{/* 批量复制功能 */}
+						{/* Batch copy function */}
 						{generateIpQuery.data.ips.length > 1 && (
 							<div className="mt-4 pt-4 border-t border-gray-200">
 								<button
@@ -164,7 +164,7 @@ export function IpRegionLookup() {
 									}}
 									className="w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors font-medium"
 								>
-									📋 复制所有IP地址
+									📋 Copy All IP Addresses
 								</button>
 							</div>
 						)}

@@ -11,5 +11,5 @@ export const postRouter = createTRPCRouter({
 			};
 		}),
 
-	// 移除了原有的post相关方法，因为已经改为ip地区查询服务
+	// Removed original post-related methods as this has been changed to IP region query service
 });

@@ -7,55 +7,55 @@ export default async function Home() {
 	return (
 		<HydrateClient>
 			<main className="flex min-h-screen flex-col bg-gradient-to-br from-blue-50 via-white to-cyan-50">
-				{/* 导航栏 */}
+				{/* Navigation bar */}
 				<nav className="border-b bg-white/80 backdrop-blur-sm">
 					<div className="container mx-auto flex items-center justify-between px-4 py-4">
 						<h1 className="font-bold text-2xl text-gray-800">
-							随机IP生成器
+							Random IP Generator
 						</h1>
 						<div className="text-sm text-gray-600">
-							输入地区码生成真实IP地址
+							Generate real IP addresses by region code
 						</div>
 					</div>
 				</nav>
 
-				{/* 主要内容区域 */}
+				{/* Main content area */}
 				<div className="container mx-auto flex-1 px-4 py-8">
-					{/* IP地区生成组件 */}
+					{/* IP region generation component */}
 					<section className="mb-12">
 						<div className="mx-auto max-w-4xl">
 							<IpRegionLookup />
 						</div>
 					</section>
 
-					{/* 使用说明 */}
+					{/* Usage instructions */}
 					<section className="mx-auto max-w-4xl">
 						<div className="bg-white rounded-lg shadow-md p-6">
 							<h3 className="font-semibold text-lg text-gray-800 mb-4">
-								🎯 使用说明
+								🎯 Usage Guide
 							</h3>
 							<div className="grid md:grid-cols-2 gap-6 text-sm text-gray-600">
 								<div>
-									<h4 className="font-medium text-gray-700 mb-2">支持的输入格式：</h4>
+									<h4 className="font-medium text-gray-700 mb-2">Supported Input Formats:</h4>
 									<ul className="space-y-1">
-										<li>• 国家代码：CN, US, JP, UK</li>
-										<li>• 中文名：中国, 美国, 日本</li>
-										<li>• 英文名：China, America, Japan</li>
+										<li>• Country codes: CN, US, JP, UK</li>
+										<li>• Chinese names: 中国, 美国, 日本</li>
+										<li>• English names: China, America, Japan</li>
 									</ul>
 								</div>
 								<div>
-									<h4 className="font-medium text-gray-700 mb-2">功能特点：</h4>
+									<h4 className="font-medium text-gray-700 mb-2">Features:</h4>
 									<ul className="space-y-1">
-										<li>• 生成真实可用的IP地址</li>
-										<li>• 支持批量生成（1-10个）</li>
-										<li>• 一键复制单个或所有IP</li>
-										<li>• 显示详细地理位置信息</li>
+										<li>• Generate real usable IP addresses</li>
+										<li>• Support batch generation (1-10)</li>
+										<li>• One-click copy single or all IPs</li>
+										<li>• Display detailed geolocation info</li>
 									</ul>
 								</div>
 							</div>
 							
 							<div className="mt-4 pt-4 border-t border-gray-200">
-								<h4 className="font-medium text-gray-700 mb-2">API调用示例：</h4>
+								<h4 className="font-medium text-gray-700 mb-2">API Call Examples:</h4>
 								<div className="bg-gray-50 rounded-lg p-3 font-mono text-sm space-y-2">
 									<div className="text-gray-600">GET /api/generate-ip?country=CN&count=3</div>
 									<div className="text-gray-600">POST /api/generate-ip {"{"}"country":"CN","count":3{"}"}</div>
@@ -65,11 +65,11 @@ export default async function Home() {
 					</section>
 				</div>
 
-				{/* 页脚 */}
+				{/* Footer */}
 				<footer className="border-t bg-gray-50">
 					<div className="container mx-auto px-4 py-6 text-center text-gray-600">
 						<p className="text-sm">
-							基于{" "}
+							Built with{" "}
 							<Link
 								href="https://create.t3.gg"
 								target="_blank"
@@ -77,7 +77,7 @@ export default async function Home() {
 							>
 								T3 Stack
 							</Link>{" "}
-							构建 - 高性能的IP地址生成服务
+							- High-performance IP address generation service
 						</p>
 					</div>
 				</footer>
