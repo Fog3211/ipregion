@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
+}
+
+// 国家/地区信息表
+model Country {
+    id              String      @id // 国家代码，如 CN, US, JP
+    nameEn          String      // 英文名
+    nameZh          String?     // 中文名
+    continent       String?     // 大洲
+    region          String?     // 地区
+    createdAt       DateTime    @default(now())
+    updatedAt       DateTime    @updatedAt
+    
+    // 关联的IP段和省份
+    ipRanges        IpRange[]
+    regions         Region[]
+    
+    @@index([nameEn])
+    @@index([nameZh])
+}
+
+// 省/州信息表
+model Region {
+    id              Int         @id @default(autoincrement())
+    name            String      // 省/州名称
+    nameZh          String?     // 中文名称
+    countryId       String      // 关联的国家代码
+    createdAt       DateTime    @default(now())
+    updatedAt       DateTime    @updatedAt
+    
+    // 关联关系
+    country         Country     @relation(fields: [countryId], references: [id], onDelete: Cascade)
+    cities          City[]
+    ipRanges        IpRange[]
+    
+    @@unique([name, countryId])
+    @@index([countryId])
+    @@index([name])
+}
+
+// 城市信息表
+model City {
+    id              Int         @id @default(autoincrement())
+    name            String      // 城市名称
+    nameZh          String?     // 中文名称
+    latitude        Float?      // 纬度
+    longitude       Float?      // 经度
+    regionId        Int         // 关联的省/州ID
+    createdAt       DateTime    @default(now())
+    updatedAt       DateTime    @updatedAt
+    
+    // 关联关系
+    region          Region      @relation(fields: [regionId], references: [id], onDelete: Cascade)
+    ipRanges        IpRange[]
+    
+    @@unique([name, regionId])
+    @@index([regionId])
+    @@index([name])
+}
+
+// IP段信息表
+model IpRange {
+    id              Int         @id @default(autoincrement())
+    startIp         String      // 起始IP
+    endIp           String      // 结束IP
+    startIpInt      BigInt      // 起始IP的整数表示，用于范围查询
+    endIpInt        BigInt      // 结束IP的整数表示，用于范围查询
+    countryId       String      // 国家代码
+    regionId        Int?        // 省/州ID
+    cityId          Int?        // 城市ID
+    isp             String?     // ISP供应商
+    createdAt       DateTime    @default(now())
+    updatedAt       DateTime    @updatedAt
+    
+    // 关联关系
+    country         Country     @relation(fields: [countryId], references: [id], onDelete: Cascade)
+    region          Region?     @relation(fields: [regionId], references: [id], onDelete: SetNull)
+    city            City?       @relation(fields: [cityId], references: [id], onDelete: SetNull)
+    
+    @@index([startIpInt, endIpInt])
+    @@index([countryId])
+    @@index([regionId])
+    @@index([cityId])
+}
