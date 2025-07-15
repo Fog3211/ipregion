@@ -50,11 +50,13 @@ export async function GET(request: NextRequest) {
 		const count = countParam ? Math.min(Math.max(Number(countParam), 1), 10) : 1;
 
 		// Find country information
+		// Support both 2-letter (CN, US) and 3-letter (CHN, USA) country codes, plus names
 		const country = await db.country.findFirst({
 			where: {
 				OR: [
-					{ id: query.toUpperCase() }, // Country code match (e.g., CN, US)
-					{ nameEn: { contains: query } }, // English name fuzzy match
+					{ id: query.toUpperCase() }, // 3-letter country code match (e.g., CHN, USA, JPN)
+					{ code2: query.toUpperCase() }, // 2-letter country code match (e.g., CN, US, JP)
+					{ nameEn: { contains: query, mode: 'insensitive' } }, // English name fuzzy match
 					{ nameZh: { contains: query } }, // Chinese name fuzzy match
 				],
 			},
@@ -71,14 +73,14 @@ export async function GET(request: NextRequest) {
 		if (!country) {
 			return Response.json({
 				success: false,
-				error: `Country/region not found: ${query}`
+				error: `Country/region not found: ${query}. Please use 3-letter country codes (e.g., CHN, USA, JPN) or country names.`
 			}, { status: 404 });
 		}
 
 		if (country.ipRanges.length === 0) {
 			return Response.json({
 				success: false,
-				error: `No IP range data available for country/region: ${query}`
+				error: `No IP range data available for country/region: ${query}. Please import real IP data first.`
 			}, { status: 404 });
 		}
 
@@ -113,7 +115,8 @@ export async function GET(request: NextRequest) {
 			success: true,
 			data: {
 				country: {
-					id: country.id,
+					id: country.id, // 3-letter code (CHN, USA, JPN)
+					code2: country.code2, // 2-letter code (CN, US, JP)
 					nameEn: country.nameEn,
 					nameZh: country.nameZh,
 					continent: country.continent,
@@ -149,11 +152,13 @@ export async function POST(request: NextRequest) {
 		const validCount = Math.min(Math.max(Number(count), 1), 10);
 
 		// Find country information
+		// Support both 2-letter (CN, US) and 3-letter (CHN, USA) country codes, plus names
 		const country = await db.country.findFirst({
 			where: {
 				OR: [
-					{ id: query.toUpperCase() },
-					{ nameEn: { contains: query } },
+					{ id: query.toUpperCase() }, // 3-letter country code match
+					{ code2: query.toUpperCase() }, // 2-letter country code match
+					{ nameEn: { contains: query, mode: 'insensitive' } },
 					{ nameZh: { contains: query } },
 				],
 			},
@@ -170,14 +175,14 @@ export async function POST(request: NextRequest) {
 		if (!country) {
 			return Response.json({
 				success: false,
-				error: `Country/region not found: ${query}`
+				error: `Country/region not found: ${query}. Please use 3-letter country codes (e.g., CHN, USA, JPN) or country names.`
 			}, { status: 404 });
 		}
 
 		if (country.ipRanges.length === 0) {
 			return Response.json({
 				success: false,
-				error: `No IP range data available for country/region: ${query}`
+				error: `No IP range data available for country/region: ${query}. Please import real IP data first.`
 			}, { status: 404 });
 		}
 
@@ -209,7 +214,8 @@ export async function POST(request: NextRequest) {
 			success: true,
 			data: {
 				country: {
-					id: country.id,
+					id: country.id, // 3-letter code (CHN, USA, JPN)
+					code2: country.code2, // 2-letter code (CN, US, JP)
 					nameEn: country.nameEn,
 					nameZh: country.nameZh,
 					continent: country.continent,

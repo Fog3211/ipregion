@@ -38,18 +38,20 @@ export const ipRegionRouter = createTRPCRouter({
 	// Generate random IP addresses for specified country/region
 	generateIpByCountry: publicProcedure
 		.input(z.object({
-			query: z.string().min(1), // Can be country code or name
+			query: z.string().min(1), // Can be 2-letter code (CN), 3-letter code (CHN), or country name
 			count: z.number().min(1).max(10).default(1), // Number of IPs to generate, default 1, max 10
 		}))
 		.query(async ({ ctx, input }) => {
 			const { query, count } = input;
 			
 			// First find country information
+			// Support both 2-letter (CN, US) and 3-letter (CHN, USA) country codes, plus names
 			const country = await ctx.db.country.findFirst({
 				where: {
 					OR: [
-						{ id: query.toUpperCase() }, // Country code match (e.g., CN, US)
-						{ nameEn: { contains: query } }, // English name fuzzy match
+						{ id: query.toUpperCase() }, // 3-letter country code match (e.g., CHN, USA, JPN)
+						{ code2: query.toUpperCase() }, // 2-letter country code match (e.g., CN, US, JP)
+						{ nameEn: { contains: query, mode: 'insensitive' } }, // English name fuzzy match
 						{ nameZh: { contains: query } }, // Chinese name fuzzy match
 					],
 				},
@@ -64,11 +66,11 @@ export const ipRegionRouter = createTRPCRouter({
 			});
 
 			if (!country) {
-				throw new Error(`Country/region not found: ${query}`);
+				throw new Error(`Country/region not found: ${query}. Please use 3-letter country codes (e.g., CHN, USA, JPN) or country names.`);
 			}
 
 			if (country.ipRanges.length === 0) {
-				throw new Error(`No IP range data available for country/region: ${query}`);
+				throw new Error(`No IP range data available for country/region: ${query}. Please import real IP data first.`);
 			}
 
 			// Generate specified number of random IPs
@@ -108,7 +110,8 @@ export const ipRegionRouter = createTRPCRouter({
 
 			return {
 				country: {
-					id: country.id,
+					id: country.id, // 3-letter code (CHN, USA, JPN)
+					code2: country.code2, // 2-letter code (CN, US, JP)
 					nameEn: country.nameEn,
 					nameZh: country.nameZh,
 					continent: country.continent,

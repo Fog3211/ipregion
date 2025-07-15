@@ -28,6 +28,7 @@
 		"@trpc/react-query": "^11.0.0",
 		"@trpc/server": "^11.0.0",
 		"@types/maxmind": "^2.0.5",
+		"csv-parse": "^6.0.0",
 		"csv-parser": "^3.2.0",
 		"maxmind": "^4.3.28",
 		"next": "^15.2.3",
