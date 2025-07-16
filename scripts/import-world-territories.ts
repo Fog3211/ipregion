@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
 import { ipToInt } from '../src/lib/ip-utils';
-
-const db = new PrismaClient();
+import { silentDb as db, optimizeSQLiteForBulkOps } from '../src/server/db';
 
 // Territory data interface - renamed from Country to avoid ambiguity
 export interface TerritoryData {
@@ -88,38 +86,47 @@ async function importTerritories(): Promise<void> {
   console.log('🏗️ Importing territories data...');
   
   // Clear existing data
+  console.log('🧹 Clearing existing data...');
   await db.ipRange.deleteMany();
   await db.region.deleteMany();
   await db.city.deleteMany();
-  await db.country.deleteMany(); // Note: will rename this table to Territory later
+  await db.country.deleteMany();
   
   const territories = await fetchTerritoriesData();
   
-  // Import territories into database
-  let importedCount = 0;
-  for (const territory of territories) {
-    try {
-      await db.country.create({
-        data: {
-          id: territory.id,
-          code2: territory.code2,
-          nameEn: territory.nameEn,
-          nameZh: territory.nameZh,
-          continent: territory.continent,
-          region: territory.region,
-        },
-      });
-      importedCount++;
-      
-      if (importedCount % 50 === 0) {
-        console.log(`   Imported ${importedCount}/${territories.length} territories...`);
-      }
-    } catch (error) {
-      console.warn(`⚠️ Failed to import ${territory.code2} (${territory.nameEn}):`, error);
-    }
-  }
+  console.log(`📦 Preparing to import ${territories.length} territories in batch...`);
   
-  console.log(`✅ Successfully imported ${importedCount} territories`);
+  try {
+    // Use transaction for batch insert to improve performance
+    await db.$transaction(async (tx) => {
+      // Prepare data for batch insert
+      const territoryData = territories.map(territory => ({
+        id: territory.id,
+        code2: territory.code2,
+        nameEn: territory.nameEn,
+        nameZh: territory.nameZh,
+        continent: territory.continent,
+        region: territory.region,
+        independent: territory.independent ?? false, // Default to false if not specified
+        unMember: territory.unMember ?? false, // Default to false if not specified
+      }));
+      
+              // Batch insert all territories at once
+        const result = await tx.country.createMany({
+          data: territoryData,
+        });
+      
+      console.log(`✅ Successfully imported ${result.count} territories in batch`);
+    }, {
+      timeout: 60000, // 60 seconds timeout for the transaction
+    });
+    
+    console.log(`🎉 Territory import completed successfully!`);
+    
+  } catch (error) {
+    console.error('❌ Failed to import territories:', error);
+    throw error;
+  }
 }
 
 /**
@@ -202,6 +209,9 @@ async function main() {
   console.log('');
   
   try {
+    // Apply SQLite optimizations for bulk operations (using silent client)
+    await optimizeSQLiteForBulkOps(db);
+    
     await importTerritories();
     await generateSampleIpRanges();
     await showStatistics();
@@ -223,6 +233,7 @@ async function main() {
   }
 }
 
-if (require.main === module) {
+// Run main function if this file is executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
   main();
 } 

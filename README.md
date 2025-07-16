@@ -38,41 +38,48 @@ cd ipregion
 pnpm install
 ```
 
-### 2. 数据库初始化
+### 2. 环境配置
+
+创建环境变量文件：
 
 ```bash
-# 初始化数据库结构
-pnpm run db:push
-
-# 生成 Prisma 客户端
-pnpm run db:generate
+cp .env.example .env
 ```
 
-### 3. 数据导入（必须步骤）
+编辑 `.env` 文件，设置数据库路径：
 
-#### 方案一：导入完整的世界地区数据（推荐）
+```env
+DATABASE_URL="file:./db.sqlite"
+REDIS_URL="redis://localhost:6379"  # 可选，用于缓存加速
+```
+
+### 3. 项目初始化 🚀
+
+**一键完成所有初始化步骤**：
 
 ```bash
-# 从 mledoze/countries 开源项目获取最新的世界地区数据
-# 包含 250+ 个国家和地区，区分主权国家和领土
-pnpm run import:territories
+pnpm run setup
 ```
 
-这将导入：
+这个命令会自动完成：
+
+1. **🏗️ 数据库初始化** - 创建表结构和索引，启用性能优化
+2. **🌍 导入世界地区数据** - 批量导入 250+ 个国家和地区（约10秒）
+3. **📍 导入 IP 地址数据** - 高性能批量导入 450,000+ IP 范围（约2-3分钟）
+
+导入的数据包括：
 - ✅ **250+ 地区**: 包括所有 ISO 3166-1 认可的国家和地区
 - ✅ **主权状态**: 区分主权国家（如中国、美国）和地区/领土（如香港、台湾、澳门）
 - ✅ **多语言支持**: 英文和中文名称
+- ✅ **真实 IP 数据**: 450,000+ 真实 IP 地址范围
 - ✅ **地理分区**: 大洲和地区信息
-- ✅ **联合国成员**: UN 成员资格状态
 
-#### 方案二：导入真实 IP 数据
+### 🚀 **性能优化**
+- **批量插入**: 使用事务和批量操作，提升导入速度 10-50 倍
+- **SQLite 优化**: 启用 WAL 模式、优化缓存和同步设置
+- **进度显示**: 实时显示导入进度和统计信息
 
-```bash
-# 从 IP2Location 导入真实的 IP 地理位置数据
-pnpm run import:ip2location
-```
-
-**注意**: 方案二需要先执行方案一，因为 IP 数据需要关联到地区数据。
+> 💡 **注意**: 初始化过程约需 3-5 分钟，大部分时间用于下载数据。实际导入速度已大幅优化！
 
 ### 4. 启动开发服务器
 
@@ -81,6 +88,45 @@ pnpm run dev
 ```
 
 访问 [http://localhost:3000](http://localhost:3000)
+
+## 🛠️ 数据管理命令
+
+如果需要单独执行某些数据操作，可以使用以下命令：
+
+### 数据库管理
+```bash
+# 数据库迁移（创建/更新表结构）
+pnpm run db:generate
+
+# 直接推送 schema 到数据库
+pnpm run db:push
+
+# 打开 Prisma Studio（数据库可视化管理）
+pnpm run db:studio
+```
+
+### 数据导入
+```bash
+# 导入世界地区数据（250+ 国家和地区）
+pnpm run import:territories
+
+# 导入 IP2Location 数据（450,000+ IP 范围）
+pnpm run import:ip2location
+
+# 完整初始化（推荐，等同于 setup）
+pnpm run db:generate && pnpm run import:territories && pnpm run import:ip2location
+```
+
+### 更新数据
+```bash
+# 重新获取最新的地区数据
+pnpm run import:territories
+
+# 重新下载最新的 IP 数据
+pnpm run import:ip2location
+```
+
+> 💡 **提示**: 地区数据建议每月更新一次，IP 数据建议每季度更新一次。
 
 ## 📖 数据说明
 

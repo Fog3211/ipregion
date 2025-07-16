@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { parse } from 'csv-parse';
 import { ipToInt, intToIp } from '../src/lib/ip-utils';
-import { db } from '../src/server/db';
+import { silentDb as db, optimizeSQLiteForBulkOps } from '../src/server/db';
 
 const streamPipeline = promisify(pipeline);
 
@@ -177,42 +177,60 @@ async function importIPRanges(records: IPLocationRecord[]): Promise<void> {
     errors: 0,
   };
   
-  const batchSize = 1000;
+  const batchSize = 5000; // Increased batch size for better performance
+  console.log(`📦 Processing ${records.length} records in batches of ${batchSize}...`);
   
   for (let i = 0; i < records.length; i += batchSize) {
     const batch = records.slice(i, i + batchSize);
     
-    for (const record of batch) {
-      try {
-        // Find matching territory by 2-letter code
+    try {
+      // Prepare batch data for bulk insert
+      const batchData: Array<{
+        startIp: string;
+        endIp: string;
+        startIpInt: bigint;
+        endIpInt: bigint;
+        countryId: string;
+      }> = [];
+      
+      // Process batch to filter valid records
+      for (const record of batch) {
         const territory = getTerritoryByCode2(record.countryCode);
-        
         if (territory) {
-          await db.ipRange.create({
-            data: {
-              startIp: record.startIp,
-              endIp: record.endIp,
-              startIpInt: BigInt(ipToInt(record.startIp)),
-              endIpInt: BigInt(ipToInt(record.endIp)),
-              countryId: territory.id,
-            },
+          batchData.push({
+            startIp: record.startIp,
+            endIp: record.endIp,
+            startIpInt: BigInt(ipToInt(record.startIp)),
+            endIpInt: BigInt(ipToInt(record.endIp)),
+            countryId: territory.id,
           });
-          stats.imported++;
         } else {
-          console.warn(`⚠️ Territory not found for code: ${record.countryCode}`);
           stats.skipped++;
         }
-      } catch (error) {
-        console.error(`❌ Error importing IP range for ${record.countryCode}:`, error);
-        stats.errors++;
       }
+      
+      // Bulk insert the entire batch in a transaction
+      if (batchData.length > 0) {
+        await db.$transaction(async (tx) => {
+          const result = await tx.ipRange.createMany({
+            data: batchData,
+          });
+          
+          stats.imported += result.count;
+        }, {
+          timeout: 120000, // 2 minutes timeout for large batches
+        });
+      }
+      
+    } catch (error) {
+      console.error(`❌ Error importing batch starting at index ${i}:`, error);
+      stats.errors += batch.length;
     }
     
     // Progress update
-    if ((i + batchSize) % 10000 === 0 || i + batchSize >= records.length) {
-      const processed = Math.min(i + batchSize, records.length);
-      console.log(`   Processed ${processed}/${stats.total} records (${Math.round(processed / stats.total * 100)}%)`);
-    }
+    const processed = Math.min(i + batchSize, records.length);
+    const progressPct = Math.round((processed / stats.total) * 100);
+    console.log(`   📊 Progress: ${processed}/${stats.total} (${progressPct}%) - Imported: ${stats.imported}, Skipped: ${stats.skipped}, Errors: ${stats.errors}`);
   }
   
   console.log(`✅ IP range import completed:`);
@@ -220,6 +238,7 @@ async function importIPRanges(records: IPLocationRecord[]): Promise<void> {
   console.log(`   Successfully imported: ${stats.imported}`);
   console.log(`   Skipped (unknown territory): ${stats.skipped}`);
   console.log(`   Errors: ${stats.errors}`);
+  console.log(`   Success rate: ${Math.round((stats.imported / stats.total) * 100)}%`);
 }
 
 async function cleanup(): Promise<void> {
@@ -286,6 +305,9 @@ async function main() {
   console.log('');
   
   try {
+    // Apply SQLite optimizations for bulk operations (using silent client)
+    await optimizeSQLiteForBulkOps(db);
+    
     await ensureDataDirectory();
     
     // Check if CSV file already exists
