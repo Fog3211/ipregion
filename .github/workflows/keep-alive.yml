@@ -1,0 +1,38 @@
+name: Keep Render App Alive
+
+on:
+  schedule:
+    # 每 14 分钟运行一次，防止 Render 免费版休眠
+    # Render 通常在 15 分钟不活跃后休眠
+    - cron: '*/14 * * * *'
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping deployed app
+        run: |
+          echo "Pinging app to prevent Render from sleeping..."
+          
+          # 使用你的 Render 应用 URL
+          APP_URL="${{ secrets.RENDER_APP_URL || 'https://ipregion.onrender.com' }}"
+          
+          # 发送 HTTP 请求保活
+          response=$(curl -s -o /dev/null -w "%{http_code}" "$APP_URL" || echo "000")
+          
+          if [ "$response" -eq 200 ] || [ "$response" -eq 304 ]; then
+            echo "✅ App is alive! HTTP status: $response"
+          else
+            echo "⚠️  App responded with status: $response"
+            # 尝试调用健康检查端点
+            health_response=$(curl -s -o /dev/null -w "%{http_code}" "$APP_URL/api/health" || echo "000")
+            echo "Health check status: $health_response"
+          fi
+          
+          echo "Keep-alive ping completed at $(date)"
+      
+      - name: Log activity
+        run: |
+          echo "Keep-alive job executed successfully"
+          echo "Next scheduled run: $(date -d '+14 minutes')" 
