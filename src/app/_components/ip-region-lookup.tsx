@@ -1,15 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { api } from "~/trpc/react";
 
 export function IpRegionLookup() {
 	const [query, setQuery] = useState("");
-	const [generateCount, setGenerateCount] = useState(1);
+	const [generateCount, setGenerateCount] = useState(4);
 	const [isClient, setIsClient] = useState(false);
+	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+	const dropdownRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		setIsClient(true);
+	}, []);
+
+	// Handle click outside dropdown to close it
+	useEffect(() => {
+		function handleClickOutside(event: MouseEvent) {
+			if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+				setIsDropdownOpen(false);
+			}
+		}
+
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+		};
 	}, []);
 
 	// Generate IP addresses for specified country with optimized caching
@@ -38,6 +54,8 @@ export function IpRegionLookup() {
 			generateIpQuery.refetch();
 		}
 	};
+
+	const ipCountOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 	return (
 		<div className="space-y-6">
@@ -70,15 +88,56 @@ export function IpRegionLookup() {
 								}
 							}}
 						/>
-						<select
-							value={generateCount}
-							onChange={(e) => setGenerateCount(Number(e.target.value))}
-							className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-						>
-							{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-								<option key={num} value={num}>{num} IPs</option>
-							))}
-						</select>
+						
+						{/* Custom Dropdown */}
+						<div className="relative" ref={dropdownRef}>
+							<button
+								type="button"
+								onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+								className="flex items-center justify-between w-[120px] px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 font-medium text-gray-700"
+							>
+								<span>{generateCount} IPs</span>
+								<svg 
+									className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} 
+									fill="none" 
+									stroke="currentColor" 
+									viewBox="0 0 24 24"
+								>
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+								</svg>
+							</button>
+
+							{/* Dropdown Menu */}
+							{isDropdownOpen && (
+								<div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1 max-h-60 overflow-y-auto">
+									{ipCountOptions.map((num) => (
+										<button
+											key={num}
+											type="button"
+											onClick={() => {
+												setGenerateCount(num);
+												setIsDropdownOpen(false);
+											}}
+											className={`w-full px-4 py-2 text-left hover:bg-blue-50 transition-colors duration-150 ${
+												generateCount === num 
+													? 'bg-blue-100 text-blue-700 font-medium' 
+													: 'text-gray-700'
+											}`}
+										>
+											<div className="flex items-center justify-between">
+												<span>{num} IPs</span>
+												{generateCount === num && (
+													<svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+														<path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+													</svg>
+												)}
+											</div>
+										</button>
+									))}
+								</div>
+							)}
+						</div>
+
 						<button
 							onClick={handleGenerate}
 							disabled={!query.trim() || generateIpQuery.isLoading}
