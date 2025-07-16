@@ -10,14 +10,17 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-// 国家/地区信息表
+// 地区/国家信息表 (Territories/Countries)
+// 注意：此表包含主权国家和地区/领土，使用independent字段区分
 model Country {
-    id              String      @id // 三位国家代码，如 CHN, USA, JPN (ISO 3166-1 alpha-3)
-    code2           String      @unique // 两位国家代码，如 CN, US, JP (ISO 3166-1 alpha-2)  
+    id              String      @id // 三位地区代码，如 CHN, USA, HKG, TWN, MAC (ISO 3166-1 alpha-3)
+    code2           String      @unique // 两位地区代码，如 CN, US, HK, TW, MO (ISO 3166-1 alpha-2)  
     nameEn          String      // 英文名
     nameZh          String?     // 中文名
     continent       String?     // 大洲
     region          String?     // 地区
+    independent     Boolean?    @default(false) // 是否为主权国家 (true=国家, false=地区/领土)
+    unMember        Boolean?    @default(false) // 是否为联合国成员
     createdAt       DateTime    @default(now())
     updatedAt       DateTime    @updatedAt
     
@@ -28,6 +31,7 @@ model Country {
     @@index([nameEn])
     @@index([nameZh])
     @@index([code2])
+    @@index([independent])
 }
 
 // 省/州信息表
@@ -35,7 +39,7 @@ model Region {
     id              Int         @id @default(autoincrement())
     name            String      // 省/州名称
     nameZh          String?     // 中文名称
-    countryId       String      // 关联的国家代码
+    countryId       String      // 关联的地区代码
     createdAt       DateTime    @default(now())
     updatedAt       DateTime    @updatedAt
     
@@ -76,7 +80,7 @@ model IpRange {
     endIp           String      // 结束IP
     startIpInt      BigInt      // 起始IP的整数表示，用于范围查询
     endIpInt        BigInt      // 结束IP的整数表示，用于范围查询
-    countryId       String      // 国家代码
+    countryId       String      // 地区代码
     regionId        Int?        // 省/州ID
     cityId          Int?        // 城市ID
     isp             String?     // ISP供应商

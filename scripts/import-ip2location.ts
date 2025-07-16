@@ -4,7 +4,6 @@ import { promisify } from 'util';
 import * as fs from 'fs';
 import * as path from 'path';
 import { parse } from 'csv-parse';
-import { COUNTRIES, getCountryByCode2 } from './data/countries';
 import { ipToInt, intToIp } from '../src/lib/ip-utils';
 import { db } from '../src/server/db';
 
@@ -19,12 +18,56 @@ const CSV_FILE = path.join(DATA_DIR, 'IP2LOCATION-LITE-DB1.CSV');
 interface IPLocationRecord {
   startIp: string;
   endIp: string;
-  startIpInt: string;
-  endIpInt: string;
   countryCode: string;
   countryName: string;
 }
 
+interface DatabaseStats {
+  total: number;
+  imported: number;
+  skipped: number;
+  errors: number;
+}
+
+// Territory lookup cache for performance
+let territoryCache: Map<string, { id: string; nameEn: string }> | null = null;
+
+/**
+ * Load and cache territory data from database
+ */
+async function loadTerritoryCache(): Promise<void> {
+  if (territoryCache) return;
+  
+  console.log('🔄 Loading territory data from database...');
+  
+  const territories = await db.country.findMany({
+    select: {
+      id: true,
+      code2: true,
+      nameEn: true,
+    },
+  });
+  
+  territoryCache = new Map();
+  territories.forEach(territory => {
+    territoryCache!.set(territory.code2.toUpperCase(), {
+      id: territory.id,
+      nameEn: territory.nameEn,
+    });
+  });
+  
+  console.log(`✅ Loaded ${territories.length} territories into cache`);
+}
+
+/**
+ * Find territory by 2-letter code
+ */
+function getTerritoryByCode2(code2: string): { id: string; nameEn: string } | undefined {
+  if (!territoryCache) {
+    throw new Error('Territory cache not loaded. Call loadTerritoryCache() first.');
+  }
+  return territoryCache.get(code2.toUpperCase());
+}
 
 
 async function ensureDataDirectory() {
@@ -103,8 +146,6 @@ async function parseCSVFile(): Promise<IPLocationRecord[]> {
           records.push({
             startIp,
             endIp,
-            startIpInt,
-            endIpInt,
             countryCode: countryCode.replace(/"/g, ''), // Remove quotes
             countryName: countryName.replace(/"/g, ''), // Remove quotes
           });
@@ -123,77 +164,62 @@ async function parseCSVFile(): Promise<IPLocationRecord[]> {
   });
 }
 
-async function importCountries(): Promise<void> {
-  console.log('🌍 Importing country data...');
-  
-  // Clear existing data
-  await db.ipRange.deleteMany();
-  await db.region.deleteMany();
-  await db.city.deleteMany();
-  await db.country.deleteMany();
-  
-  // Import countries
-  for (const country of COUNTRIES) {
-    await db.country.create({
-      data: {
-        id: country.id,
-        code2: country.code2,
-        nameEn: country.nameEn,
-        nameZh: country.nameZh,
-        continent: country.continent,
-        region: country.region,
-      },
-    });
-  }
-  
-  console.log(`✅ Imported ${COUNTRIES.length} countries`);
-}
-
 async function importIPRanges(records: IPLocationRecord[]): Promise<void> {
   console.log('🔢 Importing IP ranges...');
   
-  let imported = 0;
-  let skipped = 0;
+  // Load territory cache first
+  await loadTerritoryCache();
+  
+  const stats: DatabaseStats = {
+    total: records.length,
+    imported: 0,
+    skipped: 0,
+    errors: 0,
+  };
+  
   const batchSize = 1000;
   
   for (let i = 0; i < records.length; i += batchSize) {
     const batch = records.slice(i, i + batchSize);
-    const ipRanges = [];
     
     for (const record of batch) {
-      // Find matching country by 2-letter code
-      const country = getCountryByCode2(record.countryCode);
-      
-      if (country) {
-        ipRanges.push({
-          startIp: record.startIp,
-          endIp: record.endIp,
-          startIpInt: BigInt(record.startIpInt),
-          endIpInt: BigInt(record.endIpInt),
-          countryId: country.id, // Use 3-letter code
-          isp: null,
-        });
-        imported++;
-      } else {
-        console.warn(`⚠️ Unknown country code: ${record.countryCode}`);
-        skipped++;
+      try {
+        // Find matching territory by 2-letter code
+        const territory = getTerritoryByCode2(record.countryCode);
+        
+        if (territory) {
+          await db.ipRange.create({
+            data: {
+              startIp: record.startIp,
+              endIp: record.endIp,
+              startIpInt: BigInt(ipToInt(record.startIp)),
+              endIpInt: BigInt(ipToInt(record.endIp)),
+              countryId: territory.id,
+            },
+          });
+          stats.imported++;
+        } else {
+          console.warn(`⚠️ Territory not found for code: ${record.countryCode}`);
+          stats.skipped++;
+        }
+      } catch (error) {
+        console.error(`❌ Error importing IP range for ${record.countryCode}:`, error);
+        stats.errors++;
       }
     }
     
-    if (ipRanges.length > 0) {
-      await db.ipRange.createMany({
-        data: ipRanges,
-      });
-    }
-    
-    // Progress indicator
-    if ((i / batchSize + 1) % 10 === 0) {
-      console.log(`📊 Progress: ${Math.min(i + batchSize, records.length)}/${records.length} records processed`);
+    // Progress update
+    if ((i + batchSize) % 10000 === 0 || i + batchSize >= records.length) {
+      const processed = Math.min(i + batchSize, records.length);
+      console.log(`   Processed ${processed}/${stats.total} records (${Math.round(processed / stats.total * 100)}%)`);
     }
   }
   
-  console.log(`✅ Imported ${imported} IP ranges`);
-  console.log(`⚠️ Skipped ${skipped} records (unknown countries)`);
+  console.log(`✅ IP range import completed:`);
+  console.log(`   Total records: ${stats.total}`);
+  console.log(`   Successfully imported: ${stats.imported}`);
+  console.log(`   Skipped (unknown territory): ${stats.skipped}`);
+  console.log(`   Errors: ${stats.errors}`);
 }
 
 async function cleanup(): Promise<void> {
@@ -213,20 +239,44 @@ async function cleanup(): Promise<void> {
 }
 
 async function showStatistics(): Promise<void> {
-  console.log('\n📊 Import Statistics:');
+  console.log('\n📈 Final Statistics:');
   
-  const countryCount = await db.country.count();
+  const territoryCount = await db.country.count();
   const ipRangeCount = await db.ipRange.count();
   
-  console.log(`   Countries: ${countryCount}`);
-  console.log(`   IP Ranges: ${ipRangeCount}`);
+  console.log(`   Total territories/countries: ${territoryCount}`);
+  console.log(`   IP ranges: ${ipRangeCount}`);
   
-  // Show some example queries
-  console.log('\n🎯 Example queries you can now test:');
-  console.log('   - Generate random IP for "CHN" (China)');
-  console.log('   - Generate random IP for "USA" (United States)');
-  console.log('   - Generate random IP for "JPN" (Japan)');
-  console.log('   - API: GET /api/generate-ip?country=CHN');
+  // Show IP ranges by territory (top 10)
+  const topTerritories = await db.country.findMany({
+    select: {
+      code2: true,
+      nameEn: true,
+      nameZh: true,
+      _count: {
+        select: {
+          ipRanges: true,
+        },
+      },
+    },
+    orderBy: {
+      ipRanges: {
+        _count: 'desc',
+      },
+    },
+    take: 10,
+  });
+  
+  console.log('\n🏆 Top 10 territories by IP ranges:');
+  topTerritories.forEach((territory, index) => {
+    const chineseName = territory.nameZh ? ` / ${territory.nameZh}` : '';
+    console.log(`   ${index + 1}. ${territory.code2} - ${territory.nameEn}${chineseName} (${territory._count.ipRanges} ranges)`);
+  });
+  
+  console.log('\n🎯 Next steps:');
+  console.log('   1. Run database migration: pnpm run db:generate');
+  console.log('   2. Update territories data: pnpm run import:territories');
+  console.log('   3. Test API: GET /api/trpc/ipRegion.generateIpByCountry?input={"query":"CHN","count":1}');
 }
 
 async function main() {
@@ -247,7 +297,6 @@ async function main() {
     }
     
     const records = await parseCSVFile();
-    await importCountries();
     await importIPRanges(records);
     await cleanup();
     await showStatistics();

@@ -15,6 +15,7 @@
 		"db:studio": "prisma studio",
 		"dev": "next dev --turbo",
 		"import:ip2location": "tsx scripts/import-ip2location.ts",
+		"import:territories": "tsx scripts/import-world-territories.ts",
 		"postinstall": "prisma generate",
 		"preview": "next build && next start",
 		"start": "next start",
