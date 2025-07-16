@@ -1,17 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
 
 export function IpRegionLookup() {
 	const [query, setQuery] = useState("");
 	const [generateCount, setGenerateCount] = useState(1);
+	const [isClient, setIsClient] = useState(false);
 
-	// Generate IP addresses for specified country
+	useEffect(() => {
+		setIsClient(true);
+	}, []);
+
+	// Generate IP addresses for specified country with optimized caching
 	const generateIpQuery = api.ipRegion.generateIpByCountry.useQuery(
 		{ query, count: generateCount },
 		{
 			enabled: false, // Manual trigger
+			staleTime: 5 * 60 * 1000, // 5 minutes - IP generation results stay fresh
+			gcTime: 10 * 60 * 1000,   // 10 minutes - cache retention
+			refetchOnWindowFocus: false, // Don't refetch on focus for generated IPs
+		}
+	);
+
+	// Get cache statistics for display - only on client
+	const cacheStatsQuery = api.ipRegion.getCacheStats.useQuery(
+		undefined,
+		{
+			enabled: isClient, // Only run on client to avoid hydration mismatch
+			refetchInterval: 30000, // Refresh every 30 seconds
+			staleTime: 10000,       // 10 seconds stale time for stats
 		}
 	);
 
@@ -105,6 +123,12 @@ export function IpRegionLookup() {
 							</div>
 							<p className="text-sm text-gray-500 mt-2">
 								Randomly generated from {generateIpQuery.data.totalRanges} IP ranges
+								{/* Cache status indicator */}
+								{generateIpQuery.dataUpdatedAt && (
+									<span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+										🚀 Cached {Math.round((Date.now() - generateIpQuery.dataUpdatedAt) / 1000)}s ago
+									</span>
+								)}
 							</p>
 						</div>
 
@@ -171,6 +195,21 @@ export function IpRegionLookup() {
 					</div>
 				)}
 			</div>
+
+			{/* Cache Statistics - only show on client */}
+			{isClient && cacheStatsQuery.data && (
+				<div className="bg-gray-50 rounded-lg p-4">
+					<h4 className="font-medium text-gray-700 mb-2">⚡ Cache Performance</h4>
+					<div className="flex flex-wrap gap-4 text-sm text-gray-600">
+						<span className="flex items-center gap-1">
+							<span className={`w-2 h-2 rounded-full ${cacheStatsQuery.data.connected ? 'bg-green-500' : 'bg-red-500'}`}></span>
+							Cache: {cacheStatsQuery.data.connected ? 'Connected' : 'Disconnected'}
+						</span>
+						<span>Keys: {cacheStatsQuery.data.keyCount}</span>
+						<span>Updated: {new Date(cacheStatsQuery.data.timestamp).toLocaleTimeString()}</span>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }
