@@ -1,11 +1,9 @@
 import Link from "next/link";
 
-import { HydrateClient } from "~/trpc/server";
 import { IpRegionLookup } from "~/app/_components/ip-region-lookup";
 
-export default async function Home() {
+export default function Home() {
 	return (
-		<HydrateClient>
 			<main className="flex min-h-screen flex-col bg-gradient-to-br from-blue-50 via-white to-cyan-50">
 				{/* Navigation bar */}
 				<nav className="border-b bg-white/80 backdrop-blur-sm">
@@ -56,22 +54,9 @@ export default async function Home() {
 							
 							<div className="mt-4 pt-4 border-t border-gray-200">
 								<h4 className="font-medium text-gray-700 mb-2">API Call Examples:</h4>
-								
-								{/* REST API (推荐) */}
-								<div className="mb-3">
-									<div className="text-xs text-green-600 font-medium mb-1">🌟 REST API (推荐)</div>
-									<div className="bg-gray-50 rounded-lg p-3 font-mono text-sm space-y-1">
-										<div className="text-gray-600">GET /api/generate-ip?country=CN&count=3</div>
-										<div className="text-gray-600">POST /api/generate-ip {"{"}"country":"CN","count":3{"}"}</div>
-									</div>
-								</div>
-								
-								{/* tRPC API */}
-								<div>
-									<div className="text-xs text-blue-600 font-medium mb-1">⚡ tRPC API (类型安全)</div>
-									<div className="bg-blue-50 rounded-lg p-3 font-mono text-xs space-y-1">
-										<div className="text-blue-700 break-all">GET /api/trpc/ipRegion.generateIpByCountry?input={"{"}"query":"CN","count":3{"}"}</div>
-									</div>
+								<div className="bg-gray-50 rounded-lg p-3 font-mono text-sm space-y-2">
+									<div className="text-gray-600">GET /api/generate-ip?country=CN&count=3</div>
+									<div className="text-gray-600">GET /api/generate-ip?country=China&count=1</div>
 								</div>
 							</div>
 						</div>
@@ -95,6 +80,5 @@ export default async function Home() {
 					</div>
 				</footer>
 			</main>
-		</HydrateClient>
 	);
 }

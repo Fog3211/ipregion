@@ -71,6 +71,11 @@ GET /api/health
 
 **GET** `/api/generate-ip`
 
+安全限制：
+- 参数严格验证，防止注入攻击
+- 数量限制：1-10个（与前端一致）
+- 国家名称正则验证，仅允许字母、中文、空格和连字符
+
 参数：
 - `country`: 国家代码或名称 (必需)
   - 2位代码: `CN`, `US`, `JP`
@@ -83,16 +88,6 @@ GET /api/health
 ```bash
 GET /api/generate-ip?country=CN&count=3
 GET /api/generate-ip?country=China&count=1
-```
-
-**POST** `/api/generate-ip`
-
-请求体：
-```json
-{
-  "country": "CN",
-  "count": 3
-}
 ```
 
 ### 获取国家列表

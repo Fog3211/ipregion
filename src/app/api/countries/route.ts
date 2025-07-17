@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createCaller } from '~/server/api/root';
-import { createTRPCContext } from '~/server/api/trpc';
+import { getCountries } from '~/lib/services/ip-service';
 
 /**
  * Get list of all available countries/regions
@@ -12,14 +11,8 @@ import { createTRPCContext } from '~/server/api/trpc';
  */
 export async function GET(request: NextRequest) {
   try {
-    // Create tRPC context and caller
-    const ctx = await createTRPCContext({
-      headers: request.headers,
-    });
-    const caller = createCaller(ctx);
-
-    // Call tRPC procedure
-    const countries = await caller.ipRegion.getCountries();
+    // Call service function directly
+    const countries = await getCountries();
 
     // Return clean REST response
     return NextResponse.json({
