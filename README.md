@@ -1,6 +1,6 @@
-# IP 地理位置查询服务
+# Geo IP Generator | 地理位置 IP 生成器
 
-基于 [T3 Stack](https://create.t3.gg/) 构建的 IP 地址地理位置查询服务，支持全球地区（主权国家 + 领土）的 IP 地址生成。
+基于 [T3 Stack](https://create.t3.gg/) 构建的专业地理位置 IP 地址生成服务，支持全球地区（主权国家 + 领土）的真实 IP 地址生成。
 
 ## 🎯 特性
 
@@ -27,14 +27,14 @@
 
 ### 环境要求
 
-- Node.js 18+ 
+- Node.js 18+
 - pnpm
 
 ### 1. 克隆和安装
 
 ```bash
 git clone <repository-url>
-cd ipregion
+cd geo-ip-generator
 pnpm install
 ```
 
@@ -64,10 +64,11 @@ pnpm run setup
 这个命令会自动完成：
 
 1. **🏗️ 数据库初始化** - 创建表结构和索引，启用性能优化
-2. **🌍 导入世界地区数据** - 批量导入 250+ 个国家和地区（约10秒）
-3. **📍 导入 IP 地址数据** - 高性能批量导入 450,000+ IP 范围（约2-3分钟）
+2. **🌍 导入世界地区数据** - 批量导入 250+ 个国家和地区（约 10 秒）
+3. **📍 导入 IP 地址数据** - 高性能批量导入 450,000+ IP 范围（约 2-3 分钟）
 
 导入的数据包括：
+
 - ✅ **250+ 地区**: 包括所有 ISO 3166-1 认可的国家和地区
 - ✅ **主权状态**: 区分主权国家（如中国、美国）和地区/领土（如香港、台湾、澳门）
 - ✅ **多语言支持**: 英文和中文名称
@@ -75,6 +76,7 @@ pnpm run setup
 - ✅ **地理分区**: 大洲和地区信息
 
 ### 🚀 **性能优化**
+
 - **批量插入**: 使用事务和批量操作，提升导入速度 10-50 倍
 - **SQLite 优化**: 启用 WAL 模式、优化缓存和同步设置
 - **进度显示**: 实时显示导入进度和统计信息
@@ -94,6 +96,7 @@ pnpm run dev
 如果需要单独执行某些数据操作，可以使用以下命令：
 
 ### 数据库管理
+
 ```bash
 # 数据库迁移（创建/更新表结构）
 pnpm run db:generate
@@ -106,18 +109,21 @@ pnpm run db:studio
 ```
 
 ### 数据导入
+
 ```bash
-# 导入世界地区数据（250+ 国家和地区）
+# 完整初始化（推荐）
+pnpm run setup
+
+# 或 单独导入世界地区数据（250+ 国家和地区）
 pnpm run import:territories
 
-# 导入 IP2Location 数据（450,000+ IP 范围）
+# 或 单独导入 IP2Location 数据（450,000+ IP 范围）
 pnpm run import:ip2location
 
-# 完整初始化（推荐，等同于 setup）
-pnpm run db:generate && pnpm run import:territories && pnpm run import:ip2location
 ```
 
 ### 更新数据
+
 ```bash
 # 重新获取最新的地区数据
 pnpm run import:territories
@@ -147,13 +153,14 @@ pnpm run import:ip2location
 1. **动态更新**: 不再使用硬编码数据，直接从权威源获取最新数据
 2. **政治中性**: 客观反映 ISO 3166-1 标准，不偏向任何政治立场
 3. **完整覆盖**: 包含所有 ISO 认可的地区，不遗漏任何地区
-4. **标准化**: 严格遵循国际标准（ISO 3166-1、ISO 639-1等）
+4. **标准化**: 严格遵循国际标准（ISO 3166-1、ISO 639-1 等）
 
 ## 💻 使用说明
 
 ### Web 界面
 
 1. 在输入框中输入地区代码或名称：
+
    - 地区代码: CN, US, JP, HK, TW, MO
    - 中文名称: 中国, 美国, 日本, 香港, 台湾, 澳门
    - 英文名称: China, America, Japan, Hong Kong, Taiwan, Macao
@@ -192,13 +199,14 @@ curl -X POST http://localhost:3000/api/generate-ip \
 ```
 
 **响应格式**:
+
 ```json
 {
   "success": true,
   "data": {
     "territory": {
       "id": "CHN",
-      "code2": "CN", 
+      "code2": "CN",
       "nameEn": "China",
       "nameZh": "中国",
       "continent": "Asia",
@@ -224,16 +232,19 @@ curl -X POST http://localhost:3000/api/generate-ip \
 ## 🎯 使用场景
 
 ### 开发测试
+
 - **网络代理测试**: 生成不同地区的测试 IP
 - **地理位置服务**: 模拟用户来源
 - **CDN 分发测试**: 测试内容分发网络
 
 ### 数据分析
+
 - **用户行为模拟**: 模拟不同地区的用户访问
 - **A/B 测试**: 地理位置相关功能测试
 - **负载测试**: 模拟全球用户负载
 
 ### 安全测试
+
 - **防火墙规则测试**: 测试地区访问限制
 - **IP 白名单测试**: 验证访问控制
 - **地理围栏测试**: 测试地区限制功能
@@ -249,7 +260,7 @@ pnpm run import:territories
 
 ### 更新 IP 数据
 
-```bash  
+```bash
 # 下载并导入最新的 IP 地理位置数据
 pnpm run import:ip2location
 ```
@@ -287,7 +298,7 @@ Country {
 -- IP 段信息表
 IpRange {
   startIp: String    // 起始 IP
-  endIp: String      // 结束 IP  
+  endIp: String      // 结束 IP
   countryId: String  // 关联的地区代码
   isp: String        // ISP 供应商
 }
@@ -296,6 +307,7 @@ IpRange {
 ## 📊 项目状态
 
 ### 最新更新
+
 - ✅ **数据源升级**: 从硬编码数据升级到动态权威数据源
 - ✅ **概念澄清**: 使用"地区/领土"概念避免政治歧义
 - ✅ **完整覆盖**: 支持所有 250+ 个 ISO 认可的地区
@@ -303,15 +315,17 @@ IpRange {
 - ✅ **多语言支持**: 英文和中文双语支持
 
 ### 数据统计
+
 - **支持地区**: 250+ 个国家和地区
 - **主权国家**: 195 个（联合国成员 + 非成员主权国家）
 - **地区/领土**: 55+ 个（如香港、台湾、澳门、波多黎各等）
-- **IP 范围**: 300万+ 条记录（取决于导入的数据集）
+- **IP 范围**: 300 万+ 条记录（取决于导入的数据集）
 - **数据源**: IP2Location LITE（免费版本）
 
 ## 🛡️ 政治立场
 
 本项目保持政治中立：
+
 - 严格遵循 ISO 3166-1 国际标准
 - 客观反映现实世界的行政区划
 - 不表达任何政治倾向或立场
@@ -320,13 +334,15 @@ IpRange {
 ## 📈 性能指标
 
 ### 查询性能
+
 - **IP 查询**: < 50ms（启用索引后）
 - **地区查询**: < 100ms
 - **随机生成**: < 200ms
 
 ### 存储需求
+
 - **演示数据**: < 1MB
-- **完整数据**: ~500MB（300万 IP 记录）
+- **完整数据**: ~500MB（300 万 IP 记录）
 - **索引开销**: ~100MB
 
 ## 🤝 贡献指南
@@ -343,5 +359,6 @@ IpRange {
 本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
 
 数据来源：
+
 - 地区数据：[mledoze/countries](https://github.com/mledoze/countries) (ODbL License)
 - IP 数据：[IP2Location LITE](https://lite.ip2location.com/) (CC BY-SA 4.0)

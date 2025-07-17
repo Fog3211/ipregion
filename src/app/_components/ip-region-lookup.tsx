@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { trackIpGeneration, trackCountrySearch, trackIpCopy } from "~/lib/analytics";
 
 // Types for API responses
 interface Country {
@@ -83,6 +84,9 @@ export function IpRegionLookup() {
 	const handleGenerate = async () => {
 		if (!query.trim()) return;
 
+		// Track search query
+		trackCountrySearch(query.trim());
+
 		try {
 			setGenerateLoading(true);
 			setGenerateError(null);
@@ -96,11 +100,15 @@ export function IpRegionLookup() {
 			
 			if (!response.ok) {
 				const errorData: ApiError = await response.json();
+				trackIpGeneration(query.trim(), generateCount, false);
 				throw new Error(errorData.message || 'Failed to generate IPs');
 			}
 			
 			const result: ApiResponse<GenerateIpResponse> = await response.json();
 			setGenerateData(result.data);
+			
+			// Track successful IP generation
+			trackIpGeneration(result.data.country.nameEn, result.data.ips.length, true);
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
 			setGenerateError(errorMessage);
@@ -117,10 +125,10 @@ export function IpRegionLookup() {
 			{/* Title */}
 			<div className="text-center">
 				<h2 className="mb-4 font-bold text-3xl text-gray-800">
-					Random IP Address Generator
+					Geo IP Generator
 				</h2>
 				<p className="text-gray-600">
-					Enter country code or name to generate real IP addresses from that region
+					Professional service to generate real IP addresses from any country or region worldwide
 				</p>
 			</div>
 
@@ -258,7 +266,7 @@ export function IpRegionLookup() {
 										<button
 											onClick={() => {
 												navigator.clipboard.writeText(ipData.ip).then(() => {
-													// Could add copy success notification
+													trackIpCopy(ipData.ip, false);
 												});
 											}}
 											className="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-full transition-colors font-medium"
@@ -297,7 +305,9 @@ export function IpRegionLookup() {
 								<button
 									onClick={() => {
 										const allIps = generateData.ips.map(ip => ip.ip).join('\n');
-										navigator.clipboard.writeText(allIps);
+										navigator.clipboard.writeText(allIps).then(() => {
+											trackIpCopy('', true);
+										});
 									}}
 									className="w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors font-medium"
 								>

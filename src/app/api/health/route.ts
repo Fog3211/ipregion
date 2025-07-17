@@ -9,7 +9,7 @@ export async function GET() {
     status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    message: 'IP Region Lookup service is running',
+    message: 'Geo IP Generator service is running',
     version: process.env.npm_package_version || 'unknown'
   };
 

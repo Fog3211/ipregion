@@ -2,10 +2,11 @@ import "~/styles/globals.css";
 
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import { GoogleAnalytics } from "~/app/_components/analytics";
 
 export const metadata: Metadata = {
-	title: "Random IP Generator",
-	description: "Generate random IP addresses by country/region",
+	title: "Geo IP Generator - Generate Real IP Addresses by Country/Region",
+	description: "Professional geo-location IP address generation service. Generate real IP addresses from any country or region worldwide.",
 	icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
@@ -20,6 +21,7 @@ export default function RootLayout({
 	return (
 		<html lang="en" className={`${geist.variable}`}>
 			<body>
+				<GoogleAnalytics />
 				{children}
 			</body>
 		</html>

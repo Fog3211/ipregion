@@ -9,10 +9,10 @@ export default function Home() {
 				<nav className="border-b bg-white/80 backdrop-blur-sm">
 					<div className="container mx-auto flex items-center justify-between px-4 py-4">
 						<h1 className="font-bold text-2xl text-gray-800">
-							Random IP Generator
+							Geo IP Generator
 						</h1>
 						<div className="text-sm text-gray-600">
-							Generate real IP addresses by region code
+							Professional IP generation service by country/region
 						</div>
 					</div>
 				</nav>
@@ -75,7 +75,7 @@ export default function Home() {
 							>
 								T3 Stack
 							</Link>{" "}
-							- High-performance IP address generation service
+							- Professional geo-location IP generation service
 						</p>
 					</div>
 				</footer>
