@@ -9,7 +9,15 @@ export async function GET() {
     status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    message: 'IP Region Lookup service is running'
+    message: 'IP Region Lookup service is running',
+    endpoints: {
+      frontend: '/',
+      health: '/api/health',
+      generateIp: '/api/generate-ip',
+      countries: '/api/countries',
+      trpc: '/api/trpc'
+    },
+    version: process.env.npm_package_version || 'unknown'
   };
 
   return NextResponse.json(healthData, {

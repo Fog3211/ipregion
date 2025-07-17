@@ -61,4 +61,63 @@ GET /api/health
 }
 ```
 
-这个端点被 GitHub Actions 用于轻量级的保活检查。 
+这个端点被 GitHub Actions 用于轻量级的保活检查。
+
+## REST API 端点
+
+除了 tRPC，应用还提供传统的 REST API 端点：
+
+### 生成 IP 地址
+
+**GET** `/api/generate-ip`
+
+参数：
+- `country`: 国家代码或名称 (必需)
+  - 2位代码: `CN`, `US`, `JP`
+  - 3位代码: `CHN`, `USA`, `JPN`  
+  - 中文名称: `中国`, `美国`, `日本`
+  - 英文名称: `China`, `America`, `Japan`
+- `count`: 生成数量 (1-10, 默认为1)
+
+示例：
+```bash
+GET /api/generate-ip?country=CN&count=3
+GET /api/generate-ip?country=China&count=1
+```
+
+**POST** `/api/generate-ip`
+
+请求体：
+```json
+{
+  "country": "CN",
+  "count": 3
+}
+```
+
+### 获取国家列表
+
+**GET** `/api/countries`
+
+返回所有可用的国家/地区列表和 IP 范围数量。
+
+### API 响应格式
+
+所有 REST API 都返回统一格式：
+
+```json
+{
+  "success": true,
+  "data": { /* 具体数据 */ },
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
+
+错误响应：
+```json
+{
+  "error": "错误类型",
+  "message": "详细错误信息",
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+``` 
