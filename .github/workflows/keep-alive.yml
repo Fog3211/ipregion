@@ -18,16 +18,35 @@ jobs:
           # 使用你的 Render 应用 URL
           APP_URL="${{ secrets.RENDER_APP_URL || 'https://ipregion.onrender.com' }}"
           
-          # 发送 HTTP 请求保活
-          response=$(curl -s -o /dev/null -w "%{http_code}" "$APP_URL" || echo "000")
+          # 1. 请求前端主页面
+          echo "🏠 Pinging frontend homepage..."
+          frontend_response=$(curl -s -o /dev/null -w "%{http_code}" "$APP_URL" || echo "000")
           
-          if [ "$response" -eq 200 ] || [ "$response" -eq 304 ]; then
-            echo "✅ App is alive! HTTP status: $response"
+          if [ "$frontend_response" -eq 200 ] || [ "$frontend_response" -eq 304 ]; then
+            echo "✅ Frontend is alive! HTTP status: $frontend_response"
           else
-            echo "⚠️  App responded with status: $response"
-            # 尝试调用健康检查端点
-            health_response=$(curl -s -o /dev/null -w "%{http_code}" "$APP_URL/api/health" || echo "000")
-            echo "Health check status: $health_response"
+            echo "⚠️  Frontend responded with status: $frontend_response"
+          fi
+          
+          # 2. 请求健康检查端点
+          echo "🏥 Pinging health check endpoint..."
+          health_response=$(curl -s -o /dev/null -w "%{http_code}" "$APP_URL/api/health" || echo "000")
+          
+          if [ "$health_response" -eq 200 ] || [ "$health_response" -eq 304 ]; then
+            echo "✅ Health check is alive! HTTP status: $health_response"
+          else
+            echo "⚠️  Health check responded with status: $health_response"
+          fi
+          
+          # 3. 汇总结果
+          if ([ "$frontend_response" -eq 200 ] || [ "$frontend_response" -eq 304 ]) && ([ "$health_response" -eq 200 ] || [ "$health_response" -eq 304 ]); then
+            echo "🎉 Both frontend and backend are fully operational!"
+          elif [ "$frontend_response" -eq 200 ] || [ "$frontend_response" -eq 304 ]; then
+            echo "🟡 Frontend is working, but health check failed"
+          elif [ "$health_response" -eq 200 ] || [ "$health_response" -eq 304 ]; then
+            echo "🟡 Health check is working, but frontend failed"
+          else
+            echo "🔴 Both frontend and health check failed"
           fi
           
           echo "Keep-alive ping completed at $(date)"
