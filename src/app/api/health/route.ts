@@ -1,10 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { withRateLimit } from '~/server/api/rate-limit-middleware';
 
 /**
  * Health check endpoint for keep-alive monitoring
  * Returns basic app status and timestamp
+ * Rate limited to 100 requests per minute per IP
  */
-export async function GET() {
+async function handleHealthCheck(request: NextRequest) {
   const healthData = {
     status: 'ok',
     timestamp: new Date().toISOString(),
@@ -21,4 +23,7 @@ export async function GET() {
       'Expires': '0'
     }
   });
-} 
+}
+
+// Export the rate-limited handler
+export const GET = withRateLimit(handleHealthCheck, 'health'); 

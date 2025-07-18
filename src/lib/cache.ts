@@ -12,6 +12,7 @@ export const CACHE_KEYS = {
   IP_RANGES: 'ipranges',
   GENERATED: 'generated',
   COUNTRY_LIST: 'country_list',
+  RATE_LIMIT: 'ratelimit',
 } as const;
 
 // Cache TTL in seconds
@@ -20,6 +21,7 @@ export const CACHE_TTL = {
   IP_RANGES: 6 * 60 * 60,       // 6 hours - IP ranges are relatively stable
   GENERATED: 5 * 60,            // 5 minutes - generated results for deduplication
   COUNTRY_LIST: 12 * 60 * 60,   // 12 hours - country list is stable
+  RATE_LIMIT: 60,               // 1 minute - rate limit window
 } as const;
 
 class CacheManager {
@@ -182,6 +184,48 @@ class CacheManager {
   }
 
   /**
+   * Increment rate limit counter for an IP
+   */
+  async incrementRateLimit(ip: string, endpoint: string, ttl: number): Promise<number> {
+    if (!this.isEnabled || !this.redis) {
+      return 0; // No rate limiting if Redis is not available
+    }
+
+    try {
+      const key = this.getKey(CACHE_KEYS.RATE_LIMIT, `${ip}:${endpoint}`);
+      const current = await this.redis.incr(key);
+      
+      // Set expiration only for the first increment
+      if (current === 1) {
+        await this.redis.expire(key, ttl);
+      }
+      
+      return current;
+    } catch (error) {
+      console.warn(`Rate limit increment error for ${ip}:${endpoint}:`, error);
+      return 0; // Fail open - allow request if Redis fails
+    }
+  }
+
+  /**
+   * Get current rate limit count for an IP
+   */
+  async getRateLimitCount(ip: string, endpoint: string): Promise<number> {
+    if (!this.isEnabled || !this.redis) {
+      return 0;
+    }
+
+    try {
+      const key = this.getKey(CACHE_KEYS.RATE_LIMIT, `${ip}:${endpoint}`);
+      const count = await this.redis.get(key);
+      return count ? parseInt(count, 10) : 0;
+    } catch (error) {
+      console.warn(`Rate limit get error for ${ip}:${endpoint}:`, error);
+      return 0;
+    }
+  }
+
+  /**
    * Close Redis connection
    */
   async close(): Promise<void> {
@@ -231,4 +275,25 @@ export function getCountryCacheKey(query: string): string {
  */
 export function getGenerationCacheKey(query: string, count: number): string {
   return `${query.toLowerCase().trim()}:${count}`;
+}
+
+/**
+ * Generate cache identifier for rate limiting
+ */
+export function getRateLimitCacheKey(ip: string, endpoint: string): string {
+  return `${ip}:${endpoint}`;
+}
+
+/**
+ * Increment rate limit counter for an IP
+ */
+export async function incrementRateLimit(ip: string, endpoint: string, ttl: number): Promise<number> {
+  return await cache.incrementRateLimit(ip, endpoint, ttl);
+}
+
+/**
+ * Get current rate limit count for an IP
+ */
+export async function getRateLimitCount(ip: string, endpoint: string): Promise<number> {
+  return await cache.getRateLimitCount(ip, endpoint);
 }

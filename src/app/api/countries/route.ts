@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCountries } from '~/lib/services/ip-service';
+import { withRateLimit } from '~/server/api/rate-limit-middleware';
 
 /**
  * Get list of all available countries/regions
  * 
  * Returns all countries with their codes, names, and IP range counts
+ * Rate limited to 30 requests per minute per IP
  * 
  * Example:
  * GET /api/countries
  */
-export async function GET(request: NextRequest) {
+async function handleGetCountries(request: NextRequest) {
   try {
     // Call service function directly
     const countries = await getCountries();
@@ -36,4 +38,7 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}
+
+// Export the rate-limited handler
+export const GET = withRateLimit(handleGetCountries, 'countries'); 

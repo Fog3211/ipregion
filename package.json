@@ -19,6 +19,7 @@
 		"preview": "next build && next start",
 		"setup": "prisma migrate dev && pnpm run import:territories && pnpm run import:ip2location",
 		"start": "next start",
+		"test:rate-limit": "tsx scripts/test-rate-limit.ts",
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {

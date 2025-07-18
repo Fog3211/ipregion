@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateIpByCountry, generateIpSchema } from '~/lib/services/ip-service';
+import { withRateLimit } from '~/server/api/rate-limit-middleware';
 
 /**
  * Generate random IP addresses by country/region (GET only)
  * 
  * Security measures:
+ * - IP rate limiting (10 requests per minute)
  * - Parameter validation with regex patterns
  * - Count limited to 1-10 (matches frontend)
  * - Input sanitization and length limits
@@ -17,7 +19,7 @@ import { generateIpByCountry, generateIpSchema } from '~/lib/services/ip-service
  * GET /api/generate-ip?country=CN&count=3
  * GET /api/generate-ip?country=China&count=1
  */
-export async function GET(request: NextRequest) {
+async function handleGenerateIP(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
 
@@ -78,4 +80,7 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+// Export the rate-limited handler
+export const GET = withRateLimit(handleGenerateIP, 'generate-ip');
 
