@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateIpByCountry, generateIpSchema } from '~/lib/services/ip-service';
-import { withRateLimit } from '~/server/api/rate-limit-middleware';
+import { withRateLimit } from '~/lib/middleware/rate-limit-middleware';
 
 /**
  * Generate random IP addresses by country/region (GET only)

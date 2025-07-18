@@ -4,35 +4,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { incrementRateLimit, CACHE_TTL } from '~/lib/cache';
-
-// Rate limit configuration per endpoint
-export const RATE_LIMITS = {
-  // Generate IP endpoint - more restrictive as it's computationally expensive
-  'generate-ip': {
-    requests: 10,       // 10 requests
-    windowMs: 60 * 1000, // per minute
-    ttl: CACHE_TTL.RATE_LIMIT,
-  },
-  // Countries endpoint - less restrictive as it's mostly cached
-  'countries': {
-    requests: 30,       // 30 requests
-    windowMs: 60 * 1000, // per minute
-    ttl: CACHE_TTL.RATE_LIMIT,
-  },
-  // Health endpoint - very permissive
-  'health': {
-    requests: 100,      // 100 requests
-    windowMs: 60 * 1000, // per minute
-    ttl: CACHE_TTL.RATE_LIMIT,
-  },
-  // Default fallback
-  'default': {
-    requests: 20,       // 20 requests
-    windowMs: 60 * 1000, // per minute
-    ttl: CACHE_TTL.RATE_LIMIT,
-  },
-} as const;
+import { incrementRateLimit } from '~/lib/cache';
+import { RATE_LIMITS } from '~/config';
+import type { RateLimitEndpoint, RateLimitInfo } from '~/types';
 
 /**
  * Extract client IP address from request
@@ -92,7 +66,7 @@ export async function rateLimitMiddleware(
     }
     
     // Get rate limit config for this endpoint
-    const config = RATE_LIMITS[endpointName as keyof typeof RATE_LIMITS] || RATE_LIMITS.default;
+    const config = RATE_LIMITS[endpointName as RateLimitEndpoint] || RATE_LIMITS.default;
     
     // Check current request count
     const currentCount = await incrementRateLimit(clientIP, endpointName, config.ttl);
@@ -156,21 +130,13 @@ export function withRateLimit(
   };
 }
 
-/**
- * Rate limit information for client
- */
-export interface RateLimitInfo {
-  limit: number;
-  remaining: number;
-  reset: string;
-  endpoint: string;
-}
+
 
 /**
  * Get rate limit information for debugging
  */
 export function getRateLimitInfo(endpoint: string): RateLimitInfo {
-  const config = RATE_LIMITS[endpoint as keyof typeof RATE_LIMITS] || RATE_LIMITS.default;
+  const config = RATE_LIMITS[endpoint as RateLimitEndpoint] || RATE_LIMITS.default;
   
   return {
     limit: config.requests,

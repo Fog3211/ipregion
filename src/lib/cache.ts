@@ -5,24 +5,7 @@
 
 import Redis from 'ioredis';
 import { env } from '~/env';
-
-// Cache key prefixes
-export const CACHE_KEYS = {
-  COUNTRY: 'country',
-  IP_RANGES: 'ipranges',
-  GENERATED: 'generated',
-  COUNTRY_LIST: 'country_list',
-  RATE_LIMIT: 'ratelimit',
-} as const;
-
-// Cache TTL in seconds
-export const CACHE_TTL = {
-  COUNTRY: 24 * 60 * 60,        // 24 hours - country data rarely changes
-  IP_RANGES: 6 * 60 * 60,       // 6 hours - IP ranges are relatively stable
-  GENERATED: 5 * 60,            // 5 minutes - generated results for deduplication
-  COUNTRY_LIST: 12 * 60 * 60,   // 12 hours - country list is stable
-  RATE_LIMIT: 60,               // 1 minute - rate limit window
-} as const;
+import { CACHE_KEYS, CACHE_TTL } from '~/config';
 
 class CacheManager {
   private redis: Redis | null = null;

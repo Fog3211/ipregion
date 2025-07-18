@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCountries } from '~/lib/services/ip-service';
-import { withRateLimit } from '~/server/api/rate-limit-middleware';
+import { withRateLimit } from '~/lib/middleware/rate-limit-middleware';
 
 /**
  * Get list of all available countries/regions
