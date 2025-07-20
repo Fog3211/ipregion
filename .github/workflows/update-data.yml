@@ -1,0 +1,150 @@
+name: 🌍 Update Geo IP Data
+
+on:
+  # 每天凌晨2点自动运行
+  schedule:
+    - cron: '0 2 * * *'
+  
+  # 手动触发
+  workflow_dispatch:
+  
+  # 当数据相关脚本更新时运行
+  push:
+    paths:
+      - 'scripts/import-**'
+      - 'scripts/generate-combined-data.ts'
+      - '.github/workflows/update-data.yml'
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: 📦 Install dependencies
+        run: |
+          npm install -g pnpm
+          pnpm install
+      
+      - name: 🗄️ Setup SQLite database
+        run: |
+          # 创建临时数据库
+          pnpm exec prisma migrate dev --name init
+      
+      - name: 🌍 Import territories data
+        run: |
+          pnpm run import:territories
+      
+      - name: 📍 Import IP location data
+        run: |
+          pnpm run import:ip2location
+      
+      - name: 🔄 Generate combined JSON data
+        run: |
+          pnpm exec tsx scripts/generate-combined-data.ts
+      
+      - name: 📊 Validate data quality
+        run: |
+          # 检查生成的JSON文件
+          if [ ! -f "data/combined-geo-ip-data.json" ]; then
+            echo "❌ Combined data file not found"
+            exit 1
+          fi
+          
+          # 检查文件大小（应该在合理范围内）
+          FILE_SIZE=$(du -k "data/combined-geo-ip-data.json" | cut -f1)
+          if [ $FILE_SIZE -lt 1000 ] || [ $FILE_SIZE -gt 100000 ]; then
+            echo "❌ Data file size unusual: ${FILE_SIZE}KB"
+            exit 1
+          fi
+          
+          # 检查JSON格式
+          if ! jq empty data/combined-geo-ip-data.json; then
+            echo "❌ Invalid JSON format"
+            exit 1
+          fi
+          
+          echo "✅ Data validation passed"
+          echo "📊 File size: ${FILE_SIZE}KB"
+      
+      - name: 📝 Check for changes
+        id: changes
+        run: |
+          if git diff --quiet HEAD -- data/; then
+            echo "changes=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ No changes detected in data files"
+          else
+            echo "changes=true" >> $GITHUB_OUTPUT
+            echo "✅ Changes detected in data files"
+          fi
+      
+      - name: 🚀 Commit and push changes
+        if: steps.changes.outputs.changes == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # 添加变更的文件
+          git add data/
+          
+          # 获取数据统计信息
+          COUNTRIES=$(jq '.metadata.countries' data/combined-geo-ip-data.json)
+          IP_RANGES=$(jq '.metadata.ipRanges' data/combined-geo-ip-data.json)
+          FILE_SIZE=$(jq -r '.metadata.dataSize' data/combined-geo-ip-data.json)
+          
+          # 提交变更
+          git commit -m "🤖 Auto-update geo IP data
+          
+          📊 Updated data statistics:
+          - Countries/Regions: $COUNTRIES
+          - IP Ranges: $IP_RANGES  
+          - Data Size: $FILE_SIZE
+          - Updated: $(date '+%Y-%m-%d %H:%M:%S UTC')"
+          
+          # 推送到仓库
+          git push
+      
+      - name: 📈 Create release (weekly)
+        if: steps.changes.outputs.changes == 'true' && github.event.schedule == '0 2 * * 0'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: data-v${{ github.run_number }}
+          release_name: Geo IP Data v${{ github.run_number }}
+          body: |
+            🌍 **自动更新的地理IP数据**
+            
+            📅 **更新时间**: ${{ steps.date.outputs.date }}
+            
+            📊 **数据统计**:
+            - 国家/地区数量: $(jq '.metadata.countries' data/combined-geo-ip-data.json)
+            - IP地址段数量: $(jq '.metadata.ipRanges' data/combined-geo-ip-data.json)
+            - 数据文件大小: $(jq -r '.metadata.dataSize' data/combined-geo-ip-data.json)
+            
+            🔗 **使用方式**:
+            ```
+            https://raw.githubusercontent.com/${{ github.repository }}/main/data/combined-geo-ip-data.json
+            ```
+          draft: false
+          prerelease: false
+
+      - name: 🧹 Cleanup
+        if: always()
+        run: |
+          # 清理临时文件
+          rm -f prisma/db.sqlite*
+          rm -rf scripts/data/

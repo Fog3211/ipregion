@@ -15,9 +15,11 @@
 		"dev": "next dev --turbo",
 		"import:ip2location": "tsx scripts/import-ip2location.ts",
 		"import:territories": "tsx scripts/import-world-territories.ts",
+		"generate:data": "tsx scripts/generate-combined-data.ts",
+		"setup": "prisma migrate dev && pnpm run import:territories && pnpm run import:ip2location",
+		"setup:json": "pnpm run generate:data",
 		"postinstall": "prisma generate",
 		"preview": "next build && next start",
-		"setup": "prisma migrate dev && pnpm run import:territories && pnpm run import:ip2location",
 		"start": "next start",
 		"test:rate-limit": "tsx scripts/test-rate-limit.ts",
 		"typecheck": "tsc --noEmit"
