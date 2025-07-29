@@ -16,6 +16,7 @@ interface SyncOptions {
   forceUpdate?: boolean;
   skipBackup?: boolean;
   exportFormats?: ('json' | 'csv' | 'excel')[];
+  runValidation?: boolean;
 }
 
 class DataSyncManager {
@@ -188,6 +189,24 @@ class DataSyncManager {
   }
 
   /**
+   * 运行数据验证（可选）
+   */
+  async validateData(): Promise<void> {
+    console.log('🔍 运行数据质量验证...');
+    
+    try {
+      execSync('pnpm run validate:sample', {
+        stdio: 'inherit',
+        cwd: process.cwd()
+      });
+      console.log('✅ 数据验证完成');
+    } catch (error) {
+      console.error('⚠️ 数据验证失败，但同步继续:', error);
+      // 验证失败不阻止同步过程
+    }
+  }
+
+  /**
    * 检查数据是否有变化
    */
   async hasDataChanged(): Promise<boolean> {
@@ -290,7 +309,8 @@ async function syncData(options: SyncOptions = {}): Promise<void> {
   const {
     forceUpdate = process.env.FORCE_UPDATE === 'true',
     skipBackup = false,
-    exportFormats = ['json', 'csv', 'excel']
+    exportFormats = ['json', 'csv', 'excel'],
+    runValidation = true
   } = options;
 
   const syncManager = new DataSyncManager();
@@ -333,10 +353,15 @@ async function syncData(options: SyncOptions = {}): Promise<void> {
       return;
     }
 
-    // 5. 生成报告
+    // 5. 运行数据验证（可选）
+    if (runValidation) {
+      await syncManager.validateData();
+    }
+
+    // 6. 生成报告
     await syncManager.generateReport();
 
-    // 6. 清理旧备份
+    // 7. 清理旧备份
     await syncManager.cleanupOldBackups();
 
     success = true;
