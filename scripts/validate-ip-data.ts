@@ -124,15 +124,15 @@ class IpDataValidator {
 
     // 确保地区分布均匀
     const samplesPerCountry = Math.max(1, Math.floor(this.sampleSize / Math.min(countriesWithIps.length, 20)));
-    
+
     for (const country of countriesWithIps.slice(0, 20)) { // 限制最多20个国家避免采样过于分散
       const targetSamples = Math.min(samplesPerCountry, country.ipRanges.length);
-      
+
       for (let i = 0; i < targetSamples && samples.length < this.sampleSize; i++) {
         const randomRange = country.ipRanges[Math.floor(Math.random() * country.ipRanges.length)];
         if (randomRange) {
           const randomIp = this.generateRandomIpInRange(randomRange.startIp, randomRange.endIp);
-          
+
           samples.push({
             ip: randomIp,
             countryCode: country.code2,
@@ -147,10 +147,11 @@ class IpDataValidator {
     // 如果样本不够，随机补充
     while (samples.length < this.sampleSize && countriesWithIps.length > 0) {
       const randomCountry = countriesWithIps[Math.floor(Math.random() * countriesWithIps.length)];
-      if (randomCountry.ipRanges.length > 0) {
+      if (randomCountry && randomCountry.ipRanges.length > 0) {
         const randomRange = randomCountry.ipRanges[Math.floor(Math.random() * randomCountry.ipRanges.length)];
+        if (!randomRange) continue;
         const randomIp = this.generateRandomIpInRange(randomRange.startIp, randomRange.endIp);
-        
+
         samples.push({
           ip: randomIp,
           countryCode: randomCountry.code2,
@@ -173,12 +174,23 @@ class IpDataValidator {
   private generateRandomIpInRange(startIp: string, endIp: string): string {
     const startParts = startIp.split('.').map(Number);
     const endParts = endIp.split('.').map(Number);
-    
-    const startInt = (startParts[0] << 24) + (startParts[1] << 16) + (startParts[2] << 8) + startParts[3];
-    const endInt = (endParts[0] << 24) + (endParts[1] << 16) + (endParts[2] << 8) + endParts[3];
-    
+
+    // 确保IP地址格式正确
+    if (startParts.length !== 4 || endParts.length !== 4) {
+      throw new Error(`Invalid IP format: ${startIp} or ${endIp}`);
+    }
+
+    // 确保所有部分都是有效数字
+    if (startParts.some(part => part === undefined || isNaN(part)) || 
+        endParts.some(part => part === undefined || isNaN(part))) {
+      throw new Error(`Invalid IP format: ${startIp} or ${endIp}`);
+    }
+
+    const startInt = (startParts[0]! << 24) + (startParts[1]! << 16) + (startParts[2]! << 8) + startParts[3]!;
+    const endInt = (endParts[0]! << 24) + (endParts[1]! << 16) + (endParts[2]! << 8) + endParts[3]!;
+
     const randomInt = startInt + Math.floor(Math.random() * (endInt - startInt + 1));
-    
+
     return [
       (randomInt >>> 24) & 255,
       (randomInt >>> 16) & 255,
@@ -192,20 +204,20 @@ class IpDataValidator {
    */
   async queryIpApi(ip: string): Promise<{ data: ApiResponse; responseTime: number }> {
     const startTime = Date.now();
-    
+
     try {
       const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode,regionName,city`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-      
+
       const data = await response.json();
-      
+
       if (data.status !== 'success') {
         throw new Error(data.message || 'API returned error status');
       }
-      
+
       return {
         data: {
           countryCode: data.countryCode,
@@ -225,20 +237,20 @@ class IpDataValidator {
    */
   async queryIpapiCo(ip: string): Promise<{ data: ApiResponse; responseTime: number }> {
     const startTime = Date.now();
-    
+
     try {
       const response = await fetch(`https://ipapi.co/${ip}/json/`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-      
+
       const data = await response.json();
-      
+
       if (data.error) {
         throw new Error(data.reason || 'API returned error');
       }
-      
+
       return {
         data: {
           countryCode: data.country_code,
@@ -258,16 +270,16 @@ class IpDataValidator {
    */
   async queryGeoJs(ip: string): Promise<{ data: ApiResponse; responseTime: number }> {
     const startTime = Date.now();
-    
+
     try {
       const response = await fetch(`https://get.geojs.io/v1/ip/geo/${ip}.json`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-      
+
       const data = await response.json();
-      
+
       return {
         data: {
           countryCode: data.country_code,
@@ -293,7 +305,7 @@ class IpDataValidator {
     city?: string;
   }): Promise<ValidationResult> {
     console.log(`🔍 验证IP: ${sample.ip} (预期: ${sample.countryCode})`);
-    
+
     const result: ValidationResult = {
       ip: sample.ip,
       expected: {
@@ -314,20 +326,20 @@ class IpDataValidator {
       { name: 'ipapi.co', fn: this.queryIpapiCo.bind(this) },
       { name: 'geojs.io', fn: this.queryGeoJs.bind(this) },
     ];
-    
+
     // 每天轮换使用不同的API组合
     const selectedApis = [
-      apiProviders[dayOfYear % 3],
-      apiProviders[(dayOfYear + 1) % 3],
+      apiProviders[dayOfYear % 3]!,
+      apiProviders[(dayOfYear + 1) % 3]!,
     ];
 
     // 调用选定的API
     for (const api of selectedApis) {
       try {
         await this.delay(this.requestDelay); // 避免API限制
-        
+
         const { data, responseTime } = await api.fn(sample.ip);
-        
+
         result.actual[api.name] = {
           countryCode: data.countryCode,
           countryName: data.countryName,
@@ -335,22 +347,22 @@ class IpDataValidator {
           city: data.city,
           success: true,
         };
-        
+
         console.log(`✅ ${api.name}: ${data.countryCode} (${responseTime}ms)`);
-        
+
       } catch (error) {
         result.actual[api.name] = {
           success: false,
           error: error instanceof Error ? error.message : 'Unknown error',
         };
-        
+
         console.log(`❌ ${api.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     }
 
     // 分析结果一致性
     this.analyzeResults(result);
-    
+
     return result;
   }
 
@@ -359,7 +371,7 @@ class IpDataValidator {
    */
   private analyzeResults(result: ValidationResult): void {
     const successfulResponses = Object.entries(result.actual).filter(([_, response]) => response.success);
-    
+
     if (successfulResponses.length === 0) {
       result.confidence = 0;
       result.isCorrect = false;
@@ -367,16 +379,16 @@ class IpDataValidator {
     }
 
     // 检查国家代码匹配度
-    const countryMatches = successfulResponses.filter(([_, response]) => 
+    const countryMatches = successfulResponses.filter(([_, response]) =>
       response.countryCode?.toUpperCase() === result.expected.countryCode.toUpperCase()
     );
 
     // 计算置信度
     result.confidence = countryMatches.length / successfulResponses.length;
-    
+
     // 至少50%的API返回正确结果才认为是正确的
     result.isCorrect = result.confidence >= 0.5;
-    
+
     console.log(`📊 匹配度: ${countryMatches.length}/${successfulResponses.length} (${(result.confidence * 100).toFixed(1)}%)`);
   }
 
@@ -392,17 +404,19 @@ class IpDataValidator {
    */
   async runValidation(): Promise<ValidationReport> {
     console.log('🚀 开始IP数据验证...');
-    
+
     const startTime = Date.now();
     const samples = await this.sampleIpAddresses();
     const results: ValidationResult[] = [];
-    
+
     console.log(`\n📝 开始验证 ${samples.length} 个IP地址...`);
-    
+
     for (let i = 0; i < samples.length; i++) {
       const sample = samples[i];
-      console.log(`\n[${i + 1}/${samples.length}]`);
+      if (!sample) continue; // 跳过undefined样本
       
+      console.log(`\n[${i + 1}/${samples.length}]`);
+
       try {
         const result = await this.validateIpAddress(sample);
         results.push(result);
@@ -425,12 +439,12 @@ class IpDataValidator {
 
     // 生成报告
     const report = this.generateReport(results, Date.now() - startTime);
-    
+
     // 保存报告
     await this.saveReport(report);
-    
+
     console.log(`\n🎉 验证完成！总耗时: ${((Date.now() - startTime) / 1000).toFixed(1)}秒`);
-    
+
     return report;
   }
 
@@ -441,22 +455,22 @@ class IpDataValidator {
     const correctResults = results.filter(r => r.isCorrect);
     const incorrectResults = results.filter(r => !r.isCorrect && Object.keys(r.actual).length > 0);
     const errorResults = results.filter(r => Object.keys(r.actual).length === 0);
-    
+
     const totalConfidence = results.reduce((sum, r) => sum + r.confidence, 0);
-    
+
     // 计算各API提供商的统计信息
     const providerStats: { [provider: string]: { successRate: number; accuracyRate: number; responseTime: number } } = {};
-    
+
     const allProviders = [...new Set(results.flatMap(r => Object.keys(r.actual)))];
-    
+
     for (const provider of allProviders) {
-      const providerResults = results.map(r => r.actual[provider]).filter(Boolean);
+      const providerResults = results.map(r => r.actual[provider]).filter((r): r is NonNullable<typeof r> => r !== undefined);
       const successfulResults = providerResults.filter(r => r.success);
-      const accurateResults = results.filter(r => 
-        r.actual[provider]?.success && 
+      const accurateResults = results.filter(r =>
+        r.actual[provider]?.success &&
         r.actual[provider]?.countryCode?.toUpperCase() === r.expected.countryCode.toUpperCase()
       );
-      
+
       providerStats[provider] = {
         successRate: providerResults.length > 0 ? successfulResults.length / providerResults.length : 0,
         accuracyRate: providerResults.length > 0 ? accurateResults.length / providerResults.length : 0,
@@ -485,11 +499,11 @@ class IpDataValidator {
    */
   private async saveReport(report: ValidationReport): Promise<void> {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    
+
     // 保存完整报告
     const reportPath = path.join(this.outputDir, `validation-report-${timestamp}.json`);
     fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
-    
+
     // 保存简化的摘要
     const summaryPath = path.join(this.outputDir, 'latest-validation-summary.json');
     fs.writeFileSync(summaryPath, JSON.stringify({
@@ -498,13 +512,13 @@ class IpDataValidator {
       providerStats: report.providerStats,
       errorCount: report.errors.length,
     }, null, 2));
-    
+
     // 如果有错误，保存错误日志
     if (report.errors.length > 0) {
       const errorLogPath = path.join(this.outputDir, `errors-${timestamp}.json`);
       fs.writeFileSync(errorLogPath, JSON.stringify(report.errors, null, 2));
     }
-    
+
     console.log(`📊 验证报告:`);
     console.log(`   - 总样本: ${report.summary.totalSamples}`);
     console.log(`   - 正确: ${report.summary.correctCount} (${(report.summary.accuracyRate * 100).toFixed(1)}%)`);
@@ -512,7 +526,7 @@ class IpDataValidator {
     console.log(`   - 失败: ${report.summary.errorCount}`);
     console.log(`   - 平均置信度: ${(report.summary.averageConfidence * 100).toFixed(1)}%`);
     console.log(`📁 报告保存: ${reportPath}`);
-    
+
     if (report.errors.length > 0) {
       console.log(`🔍 错误详情:`);
       report.errors.slice(0, 5).forEach(error => {
@@ -530,7 +544,7 @@ class IpDataValidator {
  */
 async function validateIpData(sampleSize = 100): Promise<void> {
   const validator = new IpDataValidator(sampleSize);
-  
+
   try {
     await validator.runValidation();
   } catch (error) {
@@ -542,7 +556,7 @@ async function validateIpData(sampleSize = 100): Promise<void> {
 }
 
 // 运行脚本
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (typeof process !== 'undefined' && process.argv && process.argv[1] && import.meta.url?.endsWith(process.argv[1])) {
   const sampleSize = process.argv[2] ? parseInt(process.argv[2]) : 100;
   validateIpData(sampleSize).catch(error => {
     console.error('💥 脚本执行失败:', error);

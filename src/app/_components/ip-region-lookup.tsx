@@ -75,19 +75,37 @@ export function IpRegionLookup() {
 			}
 		}
 
-		document.addEventListener('mousedown', handleClickOutside);
-		return () => {
-			document.removeEventListener('mousedown', handleClickOutside);
-		};
-	}, []);
+		if (isClient) {
+			document.addEventListener('mousedown', handleClickOutside);
+			return () => {
+				document.removeEventListener('mousedown', handleClickOutside);
+			};
+		}
+	}, [isClient]);
+
+	// Safely handle clipboard operations
+	const handleCopyToClipboard = async (text: string, isMultiple: boolean = false) => {
+		if (!isClient) return;
+		
+		try {
+			await navigator.clipboard.writeText(text);
+			if (isClient) {
+				trackIpCopy(text, isMultiple);
+			}
+		} catch (error) {
+			console.warn('Failed to copy to clipboard:', error);
+		}
+	};
 
 
 
 	const handleGenerate = async () => {
 		if (!query.trim()) return;
 
-		// Track search query
-		trackCountrySearch(query.trim());
+		// Track search query only on client
+		if (isClient) {
+			trackCountrySearch(query.trim());
+		}
 
 		try {
 			setGenerateLoading(true);
@@ -102,15 +120,19 @@ export function IpRegionLookup() {
 			
 			if (!response.ok) {
 				const errorData: ApiError = await response.json();
-				trackIpGeneration(query.trim(), generateCount, false);
+				if (isClient) {
+					trackIpGeneration(query.trim(), generateCount, false);
+				}
 				throw new Error(errorData.message || 'Failed to generate IPs');
 			}
 			
 			const result: ApiResponse<GenerateIpResponse> = await response.json();
 			setGenerateData(result.data);
 			
-			// Track successful IP generation
-			trackIpGeneration(result.data.country.nameEn, result.data.ips.length, true);
+			// Track successful IP generation only on client
+			if (isClient) {
+				trackIpGeneration(result.data.country.nameEn, result.data.ips.length, true);
+			}
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
 			setGenerateError(errorMessage);
@@ -266,11 +288,7 @@ export function IpRegionLookup() {
 											{ipData.ip}
 										</div>
 										<button
-											onClick={() => {
-												navigator.clipboard.writeText(ipData.ip).then(() => {
-													trackIpCopy(ipData.ip, false);
-												});
-											}}
+											onClick={() => handleCopyToClipboard(ipData.ip, false)}
 											className="self-start sm:self-auto text-xs sm:text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-full transition-colors font-medium min-h-[36px] order-2 sm:order-2"
 										>
 											📋 Copy
@@ -313,9 +331,7 @@ export function IpRegionLookup() {
 								<button
 									onClick={() => {
 										const allIps = generateData.ips.map(ip => ip.ip).join('\n');
-										navigator.clipboard.writeText(allIps).then(() => {
-											trackIpCopy('', true);
-										});
+										handleCopyToClipboard(allIps, true);
 									}}
 									className="w-full px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors font-medium text-base min-h-[48px]"
 								>

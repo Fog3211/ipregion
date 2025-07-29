@@ -3,6 +3,8 @@ export const GA_TRACKING_ID = 'G-EZ39YFQRBE';
 
 // Initialize Google Analytics
 export const gtag = (...args: any[]) => {
+  if (typeof window === 'undefined') return; // Skip during SSR
+  
   (window as any).gtag = (window as any).gtag || function() {
     ((window as any).gtag.q = (window as any).gtag.q || []).push(arguments);
   };
@@ -11,6 +13,8 @@ export const gtag = (...args: any[]) => {
 
 // Page view tracking
 export const pageview = (url: string) => {
+  if (typeof window === 'undefined') return; // Skip during SSR
+  
   gtag('config', GA_TRACKING_ID, {
     page_path: url,
   });
@@ -23,6 +27,8 @@ export const event = (action: string, parameters?: {
   value?: number;
   custom_parameters?: Record<string, any>;
 }) => {
+  if (typeof window === 'undefined') return; // Skip during SSR
+  
   gtag('event', action, parameters);
 };
 
