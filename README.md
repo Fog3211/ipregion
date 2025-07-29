@@ -1,37 +1,41 @@
-# Geo IP Generator | 地理位置 IP 生成器
+# Geo IP Generator
 
-基于 [T3 Stack](https://create.t3.gg/) 构建的专业地理位置 IP 地址生成服务，支持全球地区（主权国家 + 领土）的真实 IP 地址生成。
+A professional geolocation IP address generation service built with [T3 Stack](https://create.t3.gg/), supporting real IP address generation for 250+ countries and territories worldwide.
 
-## 🎯 特性
+**🌍 [中文文档](./README.zh_CN.md) | English**
 
-- **🎲 随机 IP 生成**: 通过输入地区代码或名称生成真实 IP 地址
-- **📊 批量生成**: 支持一次生成 1-10 个 IP 地址
-- **🌍 全球覆盖**: 支持 250+ 个国家和地区（包括主权国家和领土）
-- **🏛️ 地区区分**: 清晰区分主权国家和地区/领土（如香港、台湾、澳门）
-- **📋 一键复制**: 支持单个或批量复制生成的 IP 地址
-- **📍 详细信息**: 显示 IP 地理位置、ISP 等详细信息
-- **🚀 现代技术栈**: Next.js + TypeScript + tRPC + Prisma + Tailwind CSS
-- **📱 响应式设计**: 支持桌面端和移动端
-- **🔗 API 支持**: 提供 RESTful API 接口供外部调用
+## ✨ Features
 
-## 技术栈
+- **🎲 Random IP Generation**: Generate real IP addresses by country code or name
+- **📊 Batch Generation**: Support generating 1-10 IP addresses at once
+- **🌍 Global Coverage**: Support 250+ countries and territories (including sovereign states and territories)
+- **🏛️ Territory Classification**: Clear distinction between sovereign countries and territories (e.g., Hong Kong, Taiwan, Macao)
+- **📋 One-Click Copy**: Support single or batch copying of generated IP addresses
+- **📍 Detailed Information**: Display IP geolocation, ISP, and other detailed information
+- **🔍 Data Validation**: Automated quality assurance with multi-API cross-validation
+- **🚀 Modern Tech Stack**: Next.js + TypeScript + Prisma + Tailwind CSS
+- **📱 Responsive Design**: Support for desktop and mobile devices
+- **🔗 API Support**: Provide RESTful API interface for external integration
 
-- **前端**: [Next.js 15](https://nextjs.org) with App Router
-- **后端**: [tRPC](https://trpc.io) for type-safe APIs
-- **数据库**: [Prisma](https://prisma.io) ORM with SQLite
-- **样式**: [Tailwind CSS](https://tailwindcss.com)
-- **类型安全**: [TypeScript](https://www.typescriptlang.org/)
-- **开发工具**: [Biome](https://biomejs.dev/) for linting and formatting
+## 🛠️ Tech Stack
 
-## 🚀 快速开始
+- **Frontend**: [Next.js 15](https://nextjs.org) with App Router
+- **Backend**: Next.js API Routes with type-safe validation
+- **Database**: [Prisma](https://prisma.io) ORM with SQLite
+- **Styling**: [Tailwind CSS](https://tailwindcss.com)
+- **Type Safety**: [TypeScript](https://www.typescriptlang.org/)
+- **Development Tools**: [Biome](https://biomejs.dev/) for linting and formatting
+- **Automation**: GitHub Actions for data sync and validation
 
-### 环境要求
+## 🚀 Quick Start
+
+### Prerequisites
 
 - Node.js 18+
 - pnpm
-- Git (用于自动化数据同步)
+- Git (for automated data synchronization)
 
-### 1. 克隆和安装
+### 1. Clone and Install
 
 ```bash
 git clone <repository-url>
@@ -39,217 +43,165 @@ cd geo-ip-generator
 pnpm install
 ```
 
-### 2. 环境配置
+### 2. Environment Setup
 
-创建环境变量文件：
+Create environment variables file:
 
 ```bash
 cp .env.example .env
 ```
 
-编辑 `.env` 文件，设置数据库路径：
+Edit the `.env` file and set the database path:
 
 ```env
 DATABASE_URL="file:./db.sqlite"
-REDIS_URL="redis://localhost:6379"  # 可选，用于缓存加速
+REDIS_URL="redis://localhost:6379"  # Optional, for caching acceleration
 ```
 
-### 3. 项目初始化 🚀
+### 3. Project Initialization 🚀
 
-**一键完成所有初始化步骤**：
+**One-click completion of all initialization steps**:
 
 ```bash
 pnpm run setup
 ```
 
-这个命令会自动完成：
+This command will automatically complete:
 
-1. **🏗️ 数据库初始化** - 创建表结构和索引，启用性能优化
-2. **🌍 导入世界地区数据** - 批量导入 250+ 个国家和地区（约 10 秒）
-3. **📍 导入 IP 地址数据** - 高性能批量导入 450,000+ IP 范围（约 2-3 分钟）
+1. **🏗️ Database Initialization** - Create table structure and indexes, enable performance optimization
+2. **🌍 Import World Territory Data** - Batch import 250+ countries and territories (~10 seconds)
+3. **📍 Import IP Address Data** - High-performance batch import of 450,000+ IP ranges (~2-3 minutes)
 
-导入的数据包括：
+Imported data includes:
 
-- ✅ **250+ 地区**: 包括所有 ISO 3166-1 认可的国家和地区
-- ✅ **主权状态**: 区分主权国家（如中国、美国）和地区/领土（如香港、台湾、澳门）
-- ✅ **多语言支持**: 英文和中文名称
-- ✅ **真实 IP 数据**: 450,000+ 真实 IP 地址范围
-- ✅ **地理分区**: 大洲和地区信息
+- ✅ **250+ Territories**: Including all ISO 3166-1 recognized countries and territories
+- ✅ **Sovereignty Status**: Distinguish sovereign countries (e.g., China, USA) and territories (e.g., Hong Kong, Taiwan, Macao)
+- ✅ **Multi-language Support**: English and Chinese names
+- ✅ **Real IP Data**: 450,000+ real IP address ranges
+- ✅ **Geographic Partitioning**: Continent and region information
 
-### 🚀 **性能优化**
+### 🚀 **Performance Optimization**
 
-- **批量插入**: 使用事务和批量操作，提升导入速度 10-50 倍
-- **SQLite 优化**: 启用 WAL 模式、优化缓存和同步设置
-- **进度显示**: 实时显示导入进度和统计信息
+- **Batch Insert**: Using transactions and batch operations, improving import speed by 10-50x
+- **SQLite Optimization**: Enable WAL mode, optimize cache and sync settings
+- **Progress Display**: Real-time display of import progress and statistics
 
-> 💡 **注意**: 初始化过程约需 3-5 分钟，大部分时间用于下载数据。实际导入速度已大幅优化！
+> 💡 **Note**: The initialization process takes about 3-5 minutes, most of the time is spent downloading data. The actual import speed has been significantly optimized!
 
-### 4. 启动开发服务器
+### 4. Start Development Server
 
 ```bash
 pnpm run dev
 ```
 
-访问 [http://localhost:3000](http://localhost:3000)
+Visit [http://localhost:3000](http://localhost:3000)
 
-## 🛠️ 数据管理命令
+## 🔄 Data Management & Automation
 
-如果需要单独执行某些数据操作，可以使用以下命令：
+### 🤖 Automated Synchronization (Recommended)
 
-### 数据库管理
-
-```bash
-# 数据库迁移（创建/更新表结构）
-pnpm run db:generate
-
-# 直接推送 schema 到数据库
-pnpm run db:push
-
-# 打开 Prisma Studio（数据库可视化管理）
-pnpm run db:studio
-```
-
-### 数据导入
+The project is configured with GitHub Actions automated data synchronization:
 
 ```bash
-# 完整初始化（推荐）
-pnpm run setup
-
-# 或 单独导入世界地区数据（250+ 国家和地区）
-pnpm run import:territories
-
-# 或 单独导入 IP2Location 数据（450,000+ IP 范围）
-pnpm run import:ip2location
-
-```
-
-### 数据同步与更新
-
-#### 🤖 自动化同步（推荐）
-
-项目已配置 GitHub Actions 自动化数据同步：
-
-```bash
-# 手动触发完整数据同步（包含备份、更新、多格式导出）
+# Manual trigger complete data synchronization (includes backup, update, multi-format export)
 pnpm run sync:data
 
-# 单独导出不同格式
-pnpm run export:csv    # 导出CSV格式
-pnpm run export:excel  # 导出Excel格式
+# Individual format exports
+pnpm run export:csv    # Export CSV format
+pnpm run export:excel  # Export Excel format
 
-# 数据质量验证
-pnpm run validate:data    # 完整验证（100个样本）
-pnpm run validate:sample  # 快速验证（50个样本）
-pnpm run validate:demo    # 演示验证（5个样本，用于测试）
+# Data quality validation
+pnpm run validate:data    # Full validation (100 samples)
+pnpm run validate:sample  # Quick validation (50 samples)
+pnpm run validate:demo    # Demo validation (5 samples, for testing)
 ```
 
-**自动化特性**：
-- ✅ 每日 UTC 02:00 自动运行（北京时间 10:00）
-- ✅ 自动备份当前数据，失败时回退
-- ✅ 智能检测数据变化，无变化时跳过提交
-- ✅ 自动生成多种格式：JSON、CSV、Excel
-- ✅ 自动创建 GitHub Release 和下载链接
-- ✅ 保留7天备份历史
-- ✅ 集成数据质量验证（50个样本快速检测）
+**Automation Features**:
+- ✅ Daily automatic run at UTC 02:00 (Beijing time 10:00)
+- ✅ Automatic backup of current data, rollback on failure
+- ✅ Smart detection of data changes, skip commit when no changes
+- ✅ Automatic generation of multiple formats: JSON, CSV, Excel
+- ✅ Automatic creation of GitHub Release and download links
+- ✅ Retain 7-day backup history
+- ✅ Integrated data quality validation (50 sample quick detection)
 
-**手动触发同步**：
-1. 访问项目的 GitHub Actions 页面
-2. 选择 "Daily Data Sync" 工作流
-3. 点击 "Run workflow" 按钮
-4. 可选择强制更新（即使数据无变化）
+**Manual Trigger Synchronization**:
+1. Visit the project's GitHub Actions page
+2. Select "Daily Data Sync" workflow
+3. Click "Run workflow" button
+4. Optionally choose force update (even if no data changes)
 
-#### 📋 手动数据更新
+### 📋 Manual Data Updates
 
 ```bash
-# 重新获取最新的地区数据
+# Re-fetch latest territory data
 pnpm run import:territories
 
-# 重新下载最新的 IP 数据
+# Re-download latest IP data
 pnpm run import:ip2location
 
-# 生成数据文件
+# Generate data files
 pnpm run generate:data
 ```
 
-> 💡 **提示**: 自动化同步已配置最佳更新策略，通常无需手动操作。
+> 💡 **Tip**: Automated synchronization has configured optimal update strategies, usually no manual operation is required.
 
-## 📖 数据说明
+## 💻 Usage Guide
 
-### 地区 vs 国家概念
+### Web Interface
 
-为了避免政治敏感性和歧义，本项目使用"地区/领土"（Territory）概念替代"国家"：
+1. **IP Generation**: Enter country code or name in the input box:
+   - Country codes: CN, US, JP, HK, TW, MO
+   - Chinese names: 中国, 美国, 日本, 香港, 台湾, 澳门
+   - English names: China, America, Japan, Hong Kong, Taiwan, Macao
 
-- **主权国家**: `independent: true` - 如中国、美国、日本等
-- **地区/领土**: `independent: false` - 如香港、台湾、澳门、波多黎各等
+2. **Batch Generation**: Select generation count (1-10)
 
-### 数据来源
+3. **One-Click Copy**: Support single or batch copying of generated IP addresses
 
-- **地区数据**: [mledoze/countries](https://github.com/mledoze/countries) - 6.1k stars 的权威开源项目
-- **IP 数据**: [IP2Location LITE](https://lite.ip2location.com/) - 免费版本，每月更新
+4. **Data Download**: Visit `/download` page to get complete datasets
 
-### 数据特点
+5. **Quality Monitoring**: Visit `/validation` page to view data quality reports
 
-1. **动态更新**: 不再使用硬编码数据，直接从权威源获取最新数据
-2. **政治中性**: 客观反映 ISO 3166-1 标准，不偏向任何政治立场
-3. **完整覆盖**: 包含所有 ISO 认可的地区，不遗漏任何地区
-4. **标准化**: 严格遵循国际标准（ISO 3166-1、ISO 639-1 等）
+### Data Download Center
 
-## 💻 使用说明
+Dedicated data download page providing multiple formats:
 
-### Web 界面
+- **📄 JSON Format**: Complete and minified versions, suitable for APIs and programmatic access
+- **📋 CSV Format**: Complete and light versions, suitable for Excel analysis and database import
+- **📊 Excel Format**: Multi-worksheet version, including statistical analysis and data visualization
+- **📈 Real-time Statistics**: Display latest data volume, update time, and other information
 
-1. **IP 生成**: 在输入框中输入地区代码或名称：
-   - 地区代码: CN, US, JP, HK, TW, MO
-   - 中文名称: 中国, 美国, 日本, 香港, 台湾, 澳门
-   - 英文名称: China, America, Japan, Hong Kong, Taiwan, Macao
+### Data Quality Monitoring
 
-2. **批量生成**: 选择生成数量（1-10）
+Dedicated data validation page providing:
 
-3. **一键复制**: 支持单个或批量复制生成的 IP 地址
+- **🔍 Automatic Validation**: Weekly automatic runs to verify IP geolocation data accuracy
+- **📊 Quality Reports**: Accuracy statistics, confidence analysis, third-party API comparison
+- **⚠️ Anomaly Detection**: Automatically create GitHub Issues when accuracy drops below 85%
+- **📚 Historical Records**: Save validation history for trend analysis
+- **🔄 Cross-validation**: Use multiple third-party APIs for cross-validation, avoiding single points of failure
 
-4. **数据下载**: 访问 `/download` 页面获取完整数据集
+### API Integration
 
-5. **质量监控**: 访问 `/validation` 页面查看数据质量报告
+#### Generate Random IP Addresses
 
-### 数据下载页面
+**API Endpoint**: `/api/generate-ip`
 
-新增专门的数据下载页面，提供多种格式：
-
-- **📄 JSON 格式**: 完整版和压缩版，适合 API 和程序化访问
-- **📋 CSV 格式**: 完整版和轻量版，适合 Excel 分析和数据库导入
-- **📊 Excel 格式**: 多工作表版本，包含统计分析和数据可视化
-- **📈 实时统计**: 显示最新的数据量、更新时间等信息
-
-### 数据质量监控
-
-专门的数据验证页面，提供：
-
-- **🔍 自动验证**: 每周自动运行，验证IP地理位置数据准确性
-- **📊 质量报告**: 准确率统计、置信度分析、第三方API对比
-- **⚠️ 异常检测**: 准确率低于85%时自动创建GitHub Issue
-- **📚 历史记录**: 保存验证历史，便于趋势分析
-- **🔄 交叉验证**: 使用多个第三方API交叉验证，避免单点故障
-
-### API 调用
-
-#### 生成随机 IP 地址
-
-**API 端点**: `/api/generate-ip`
-
-**方法 1: GET 请求**
+**Method 1: GET Request**
 
 ```bash
-# 生成 1 个中国 IP
+# Generate 1 China IP
 GET /api/generate-ip?country=CN
 
-# 生成 3 个美国 IP
+# Generate 3 US IPs
 GET /api/generate-ip?country=US&count=3
 
-# 使用中文名称
+# Using Chinese names
 GET /api/generate-ip?country=中国&count=2
 ```
 
-**方法 2: POST 请求**
+**Method 2: POST Request**
 
 ```bash
 curl -X POST http://localhost:3000/api/generate-ip \
@@ -257,20 +209,19 @@ curl -X POST http://localhost:3000/api/generate-ip \
   -d '{"country": "CN", "count": 3}'
 ```
 
-**响应格式**:
+**Response Format**:
 
 ```json
 {
   "success": true,
   "data": {
-    "territory": {
+    "country": {
       "id": "CHN",
       "code2": "CN",
       "nameEn": "China",
       "nameZh": "中国",
       "continent": "Asia",
-      "region": "Eastern Asia",
-      "independent": true
+      "region": "Eastern Asia"
     },
     "ips": [
       {
@@ -282,196 +233,159 @@ curl -X POST http://localhost:3000/api/generate-ip \
         }
       }
     ],
-    "totalRanges": 1250,
-    "generatedCount": 1
+    "totalRanges": 1250
   }
 }
 ```
 
-## 🎯 使用场景
+## 🎯 Use Cases
 
-### 开发测试
+### Development & Testing
+- **Network Proxy Testing**: Generate test IPs from different regions
+- **Geolocation Services**: Simulate user origins
+- **CDN Distribution Testing**: Test content delivery networks
 
-- **网络代理测试**: 生成不同地区的测试 IP
-- **地理位置服务**: 模拟用户来源
-- **CDN 分发测试**: 测试内容分发网络
+### Data Analysis
+- **User Behavior Simulation**: Simulate user access from different regions
+- **A/B Testing**: Geographic location-related feature testing
+- **Load Testing**: Simulate global user load
 
-### 数据分析
+### Security Testing
+- **Firewall Rule Testing**: Test regional access restrictions
+- **IP Whitelist Testing**: Verify access control
+- **Geofencing Testing**: Test regional restriction features
 
-- **用户行为模拟**: 模拟不同地区的用户访问
-- **A/B 测试**: 地理位置相关功能测试
-- **负载测试**: 模拟全球用户负载
+## 📊 Project Status
 
-### 安全测试
+### Latest Updates (v2.1)
 
-- **防火墙规则测试**: 测试地区访问限制
-- **IP 白名单测试**: 验证访问控制
-- **地理围栏测试**: 测试地区限制功能
+- ✅ **Automated Synchronization**: GitHub Actions daily automatic data synchronization
+- ✅ **Backup Mechanism**: Automatic backup and failure rollback to ensure data security
+- ✅ **Multi-format Export**: Added CSV and Excel format support
+- ✅ **Download Center**: Dedicated data download page
+- ✅ **Quality Monitoring**: Brand new data validation system and Web interface
+- ✅ **Smart Validation**: Multi-third-party API cross-validation for data accuracy
+- ✅ **Anomaly Detection**: Low accuracy automatic alerts and Issue creation
+- ✅ **Timestamp Management**: Filenames include timestamps for easy version management
+- ✅ **Smart Detection**: Only commit updates when data changes
+- ✅ **Release Automation**: Automatic creation of GitHub Release and download links
 
-## 🔧 数据管理
+### Data Statistics
 
-### 更新地区数据
+- **Supported Territories**: 250+ countries and territories
+- **Sovereign Countries**: 195 (UN members + non-member sovereign countries)
+- **Territories**: 55+ (e.g., Hong Kong, Taiwan, Macao, Puerto Rico, etc.)
+- **IP Ranges**: 450,000+ records
+- **Data Source**: IP2Location LITE (free version)
 
-```bash
-# 获取最新的世界地区数据
-pnpm run import:territories
-```
+## 📈 Performance Metrics
 
-### 更新 IP 数据
+### Query Performance
+- **IP Query**: < 50ms (after enabling indexes)
+- **Territory Query**: < 100ms
+- **Random Generation**: < 200ms
 
-```bash
-# 下载并导入最新的 IP 地理位置数据
-pnpm run import:ip2location
-```
+### Storage Requirements
+- **JSON Data**: ~2-5MB (depending on IP range count)
+- **CSV Data**: ~3-8MB (tabular format)
+- **Excel Data**: ~1-3MB (multi-worksheet)
+- **Complete Database**: ~500MB (3 million IP records)
+- **Backup Storage**: ~50MB (7-day history retention)
 
-### 数据库管理
+### Automation Performance
+- **Sync Frequency**: Daily
+- **Data Detection**: < 30 seconds
+- **Backup Creation**: < 2 minutes
+- **Format Export**: < 5 minutes
+- **Data Validation**: < 3 minutes (50 samples)
+- **Failure Rollback**: < 1 minute
 
-```bash
-# 查看数据库
-pnpm run db:studio
+### Data Quality Metrics
+- **Validation Frequency**: Weekly (manually triggerable)
+- **Sample Size**: 100 IP addresses (standard) / 50 (quick)
+- **Accuracy Target**: ≥ 85% (alerts triggered below this threshold)
+- **API Providers**: 3 (rotating usage to avoid single point dependency)
+- **Confidence Calculation**: Multi-API consensus scoring
 
-# 重置数据库
-pnpm run db:push
+## ⚙️ Deployment Configuration
 
-# 应用数据库迁移
-pnpm run db:migrate
-```
+### GitHub Actions Setup
 
-## 🗃️ 数据库结构
+The project includes automated data synchronization functionality, no additional Secrets configuration required, uses default `GITHUB_TOKEN`.
 
-### 核心表结构
+For custom configuration:
 
-```sql
--- 地区信息表（包含国家和地区/领土）
-Country {
-  id: String         // 三位地区代码 (CHN, USA, HKG, TWN, MAC)
-  code2: String      // 两位地区代码 (CN, US, HK, TW, MO)
-  nameEn: String     // 英文名
-  nameZh: String     // 中文名
-  continent: String  // 大洲
-  region: String     // 地区
-  independent: Boolean // 是否为主权国家
-  unMember: Boolean    // 是否为联合国成员
-}
+1. **Scheduled Tasks**: Modify cron expressions in `.github/workflows/data-sync.yml`
+2. **Data Sources**: Configure different data source URLs in scripts
+3. **Backup Strategy**: Adjust backup retention days and storage location
 
--- IP 段信息表
-IpRange {
-  startIp: String    // 起始 IP
-  endIp: String      // 结束 IP
-  countryId: String  // 关联的地区代码
-  isp: String        // ISP 供应商
-}
-```
-
-## 📊 项目状态
-
-### 最新更新 (v2.1)
-
-- ✅ **自动化同步**: GitHub Actions 每日自动数据同步
-- ✅ **备份机制**: 自动备份和失败回退，确保数据安全
-- ✅ **多格式导出**: 新增 CSV 和 Excel 格式支持
-- ✅ **下载中心**: 专门的数据下载页面
-- ✅ **质量监控**: 全新的数据验证系统和Web界面
-- ✅ **智能验证**: 使用多个第三方API交叉验证数据准确性
-- ✅ **异常检测**: 低准确率自动告警和Issue创建
-- ✅ **时间戳管理**: 文件名包含时间戳，便于版本管理
-- ✅ **智能检测**: 只有数据变化时才提交更新
-- ✅ **发布自动化**: 自动创建 GitHub Release 和下载链接
-
-### 数据统计
-
-- **支持地区**: 250+ 个国家和地区
-- **主权国家**: 195 个（联合国成员 + 非成员主权国家）
-- **地区/领土**: 55+ 个（如香港、台湾、澳门、波多黎各等）
-- **IP 范围**: 300 万+ 条记录（取决于导入的数据集）
-- **数据源**: IP2Location LITE（免费版本）
-
-## 🛡️ 政治立场
-
-本项目保持政治中立：
-
-- 严格遵循 ISO 3166-1 国际标准
-- 客观反映现实世界的行政区划
-- 不表达任何政治倾向或立场
-- 为技术目的服务，不涉及政治争议
-
-## 📈 性能指标
-
-### 查询性能
-
-- **IP 查询**: < 50ms（启用索引后）
-- **地区查询**: < 100ms
-- **随机生成**: < 200ms
-
-### 存储需求
-
-- **JSON 数据**: ~2-5MB（取决于 IP 段数量）
-- **CSV 数据**: ~3-8MB（表格格式）
-- **Excel 数据**: ~1-3MB（多工作表）
-- **完整数据库**: ~500MB（300 万 IP 记录）
-- **备份存储**: ~50MB（保留7天历史）
-
-### 自动化性能
-
-- **同步频率**: 每日一次
-- **数据检测**: < 30 秒
-- **备份创建**: < 2 分钟
-- **格式导出**: < 5 分钟
-- **数据验证**: < 3 分钟（50个样本）
-- **失败回退**: < 1 分钟
-
-### 数据质量指标
-
-- **验证频率**: 每周一次（可手动触发）
-- **采样规模**: 100个IP地址（标准）/ 50个（快速）
-- **准确率目标**: ≥ 85%（低于此值会触发告警）
-- **API提供商**: 3个（轮换使用，避免单点依赖）
-- **置信度计算**: 基于多API一致性评分
-
-## ⚙️ 部署配置
-
-### GitHub Actions 设置
-
-项目包含自动化数据同步功能，无需额外配置 Secrets，使用默认的 `GITHUB_TOKEN` 即可。
-
-如需自定义配置：
-
-1. **定时任务**: 修改 `.github/workflows/data-sync.yml` 中的 cron 表达式
-2. **数据源**: 在脚本中配置不同的数据源 URL  
-3. **备份策略**: 调整备份保留天数和存储位置
-
-### 本地开发
+### Local Development
 
 ```bash
-# 测试数据同步
+# Test data synchronization
 pnpm run sync:data
 
-# 测试单独导出
+# Test individual exports
 pnpm run export:csv
 pnpm run export:excel
 
-# 检查生成的文件
+# Check generated files
 ls -la data/
 
-# 测试验证系统
+# Test validation system
 pnpm run validate:demo
 ```
 
-## 🤝 贡献指南
+## 🗃️ Database Structure
 
-欢迎贡献代码！请参考以下步骤：
+### Core Table Structure
 
-1. Fork 项目
-2. 创建功能分支  
-3. 测试自动化同步功能
-4. 提交更改（遵循 Conventional Commits）
-5. 发送 Pull Request
+```sql
+-- Territory information table (includes countries and territories)
+Country {
+  id: String         // Three-letter territory code (CHN, USA, HKG, TWN, MAC)
+  code2: String      // Two-letter territory code (CN, US, HK, TW, MO)
+  nameEn: String     // English name
+  nameZh: String     // Chinese name
+  continent: String  // Continent
+  region: String     // Region
+  independent: Boolean // Whether it's a sovereign country
+  unMember: Boolean    // Whether it's a UN member
+}
 
-## 📄 许可证
+-- IP range information table
+IpRange {
+  startIp: String    // Start IP
+  endIp: String      // End IP
+  countryId: String  // Associated territory code
+  isp: String        // ISP provider
+}
+```
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+## 🛡️ Political Stance
 
-数据来源：
+This project maintains political neutrality:
 
-- 地区数据：[mledoze/countries](https://github.com/mledoze/countries) (ODbL License)
-- IP 数据：[IP2Location LITE](https://lite.ip2location.com/) (CC BY-SA 4.0)
+- Strictly follows ISO 3166-1 international standards
+- Objectively reflects real-world administrative divisions
+- Does not express any political tendencies or positions
+- Serves technical purposes without involving political disputes
+
+## 🤝 Contributing
+
+Welcome to contribute code! Please refer to the following steps:
+
+1. Fork the project
+2. Create a feature branch
+3. Test automated synchronization functionality
+4. Submit changes (follow Conventional Commits)
+5. Send Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+Data sources:
+
+- Territory data: [mledoze/countries](https://github.com/mledoze/countries) (ODbL License)
+- IP data: [IP2Location LITE](https://lite.ip2location.com/) (CC BY-SA 4.0)
