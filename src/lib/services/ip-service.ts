@@ -40,13 +40,14 @@ export async function generateIpByCountry(input: z.infer<typeof generateIpSchema
         },
         CACHE_TTL.COUNTRY,
         async () => {
-          return await db.country.findFirst({
+          // Try exact matches first, then partial matches
+          let country = await db.country.findFirst({
             where: {
               OR: [
                 { id: query.toUpperCase() }, // 3-letter country code match (e.g., CHN, USA, JPN)
                 { code2: query.toUpperCase() }, // 2-letter country code match (e.g., CN, US, JP)
-                { nameEn: { contains: query } }, // English name fuzzy match
-                { nameZh: { contains: query } }, // Chinese name fuzzy match
+                { nameEn: query }, // English name exact match
+                { nameZh: query }, // Chinese name exact match
               ],
             },
             select: {
@@ -58,6 +59,33 @@ export async function generateIpByCountry(input: z.infer<typeof generateIpSchema
               region: true,
             },
           });
+
+          // If no exact match found, try partial matches
+          if (!country) {
+            country = await db.country.findFirst({
+              where: {
+                OR: [
+                  { nameEn: { contains: query } }, // English name fuzzy match
+                  { nameZh: { contains: query } }, // Chinese name fuzzy match
+                ],
+              },
+              select: {
+                id: true,
+                code2: true,
+                nameEn: true,
+                nameZh: true,
+                continent: true,
+                region: true,
+              },
+              // Order by name length to prefer shorter, more specific matches
+              orderBy: [
+                { nameZh: 'asc' },
+                { nameEn: 'asc' }
+              ]
+            });
+          }
+
+          return country;
         }
       );
 

@@ -1,4 +1,4 @@
-import { ipToInt } from '../src/lib/ip-utils';
+import { ipToInt } from '../src/lib/utils/ip-utils';
 import { silentDb as db, optimizeSQLiteForBulkOps } from '../src/server/db';
 
 // Territory data interface - renamed from Country to avoid ambiguity

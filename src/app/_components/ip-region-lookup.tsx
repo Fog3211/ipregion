@@ -121,13 +121,13 @@ export function IpRegionLookup() {
 	};
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-4 sm:space-y-6">
 			{/* Title */}
-			<div className="text-center">
-				<h2 className="mb-4 font-bold text-2xl sm:text-3xl text-gray-800">
+			<div className="text-center px-2">
+				<h2 className="mb-3 sm:mb-4 font-bold text-xl sm:text-2xl md:text-3xl text-gray-800">
 					Geo IP Generator
 				</h2>
-				<p className="text-sm sm:text-base text-gray-600">
+				<p className="text-sm sm:text-base text-gray-600 leading-relaxed">
 					Professional service to generate real IP addresses from any country or region worldwide
 				</p>
 			</div>
@@ -139,14 +139,14 @@ export function IpRegionLookup() {
 						Enter country code or name
 					</label>
 					
-					{/* Mobile-first responsive layout */}
+					{/* Mobile-optimized responsive layout */}
 					<div className="space-y-3 sm:space-y-0 sm:flex sm:gap-3">
 						<input
 							type="text"
 							value={query}
 							onChange={(e) => setQuery(e.target.value)}
-							placeholder="e.g: CN, China, 中国, US, America, Japan"
-							className="w-full sm:flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+							placeholder="e.g: CN, China, 中国, US, America..."
+							className="w-full sm:flex-1 px-4 py-3 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-base"
 							onKeyPress={(e) => {
 								if (e.key === "Enter") {
 									handleGenerate();
@@ -206,7 +206,7 @@ export function IpRegionLookup() {
 						<button
 							onClick={handleGenerate}
 							disabled={!query.trim() || generateLoading}
-							className="w-full sm:w-auto px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-base"
+							className="w-full sm:w-auto px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-base min-h-[48px]"
 						>
 							{generateLoading ? "Generating..." : "Generate IP"}
 						</button>
@@ -261,8 +261,8 @@ export function IpRegionLookup() {
 									key={index}
 									className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:shadow-md transition-shadow"
 								>
-									<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-										<div className="font-mono text-base sm:text-lg font-bold text-blue-700 break-all">
+									<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-2 mb-2">
+										<div className="font-mono text-sm sm:text-base md:text-lg font-bold text-blue-700 break-all order-1">
 											{ipData.ip}
 										</div>
 										<button
@@ -271,17 +271,17 @@ export function IpRegionLookup() {
 													trackIpCopy(ipData.ip, false);
 												});
 											}}
-											className="self-start sm:self-auto text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-full transition-colors font-medium min-h-[36px]"
+											className="self-start sm:self-auto text-xs sm:text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-full transition-colors font-medium min-h-[36px] order-2 sm:order-2"
 										>
 											📋 Copy
 										</button>
 									</div>
 									
-									<div className="text-sm text-gray-600 space-y-1">
+									<div className="text-xs sm:text-sm text-gray-600 space-y-1">
 										{(ipData.location.region || ipData.location.city) && (
 											<p className="flex items-start gap-1">
-												<span className="text-gray-500 mt-0.5">📍</span>
-												<span>
+												<span className="text-gray-500 mt-0.5 flex-shrink-0">📍</span>
+												<span className="break-words">
 													<span className="font-medium">Location:</span>{" "}
 													{[ipData.location.region, ipData.location.city].filter(Boolean).join(", ")}
 												</span>
@@ -289,15 +289,15 @@ export function IpRegionLookup() {
 										)}
 										{ipData.location.isp && (
 											<p className="flex items-start gap-1">
-												<span className="text-gray-500 mt-0.5">🌐</span>
-												<span>
+												<span className="text-gray-500 mt-0.5 flex-shrink-0">🌐</span>
+												<span className="break-words">
 													<span className="font-medium">ISP:</span>{" "}
 													{ipData.location.isp}
 												</span>
 											</p>
 										)}
 										<p className="text-xs text-gray-500 mt-2 flex items-start gap-1">
-											<span className="text-gray-400 mt-0.5">🔗</span>
+											<span className="text-gray-400 mt-0.5 flex-shrink-0">🔗</span>
 											<span className="break-all">
 												IP Range: {ipData.ipRange.startIp} - {ipData.ipRange.endIp}
 											</span>
