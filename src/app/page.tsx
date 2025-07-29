@@ -11,8 +11,16 @@ export default function Home() {
 						<h1 className="font-bold text-2xl text-gray-800">
 							Geo IP Generator
 						</h1>
-						<div className="text-sm text-gray-600">
-							Professional IP generation service by country/region
+						<div className="flex items-center space-x-4">
+							<Link 
+								href="/download"
+								className="text-sm text-gray-600 hover:text-blue-600 transition-colors px-3 py-2 rounded-lg hover:bg-blue-50"
+							>
+								📦 Download Data
+							</Link>
+							<div className="text-sm text-gray-600">
+								Professional IP generation service by country/region
+							</div>
 						</div>
 					</div>
 				</nav>
@@ -58,6 +66,17 @@ export default function Home() {
 									<div className="text-gray-600">GET /api/generate-ip?country=CN&count=3</div>
 									<div className="text-gray-600">GET /api/generate-ip?country=China&count=1</div>
 								</div>
+							</div>
+
+							<div className="mt-4 pt-4 border-t border-gray-200">
+								<h4 className="font-medium text-gray-700 mb-2">Data Downloads:</h4>
+								<p className="text-gray-600 mb-2">Download complete datasets in multiple formats:</p>
+								<Link 
+									href="/download"
+									className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+								>
+									📦 Download JSON, CSV, Excel Data
+								</Link>
 							</div>
 						</div>
 					</section>

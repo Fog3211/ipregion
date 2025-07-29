@@ -4,7 +4,7 @@ import { promisify } from 'util';
 import * as fs from 'fs';
 import * as path from 'path';
 import { parse } from 'csv-parse';
-import { ipToInt, intToIp } from '../src/lib/ip-utils';
+import { ipToInt, intToIp } from '../src/lib/utils/ip-utils';
 import { silentDb as db, optimizeSQLiteForBulkOps } from '../src/server/db';
 
 const streamPipeline = promisify(pipeline);

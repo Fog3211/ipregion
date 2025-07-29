@@ -1,7 +1,7 @@
 'use client';
 
 import Script from 'next/script';
-import { GA_TRACKING_ID } from '~/lib/analytics';
+import { GA_TRACKING_ID } from '~/lib/utils/analytics';
 
 export const GoogleAnalytics = () => {
   return (

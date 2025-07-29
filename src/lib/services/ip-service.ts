@@ -1,14 +1,12 @@
 import { z } from 'zod';
 import { db } from '~/server/db';
-import { generateRandomIpInRange } from '~/lib/ip-utils';
+import { generateRandomIpInRange } from '~/lib/utils/ip-utils';
 import { 
-  cache, 
   withCache, 
-  CACHE_KEYS, 
-  CACHE_TTL, 
   getCountryCacheKey, 
   getGenerationCacheKey 
 } from '~/lib/cache';
+import { CACHE_KEYS, CACHE_TTL } from '~/config';
 
 // Input validation schemas
 export const generateIpSchema = z.object({
@@ -21,8 +19,6 @@ export const generateIpSchema = z.object({
     .int('Count must be an integer')
     .default(1),
 });
-
-
 
 // Service functions
 export async function generateIpByCountry(input: z.infer<typeof generateIpSchema>) {

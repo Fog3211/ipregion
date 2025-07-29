@@ -5,7 +5,7 @@
 
 import Redis from 'ioredis';
 import { env } from '~/env';
-import { CACHE_KEYS, CACHE_TTL } from '~/config';
+import { CACHE_KEYS } from '~/config';
 
 class CacheManager {
   private redis: Redis | null = null;
